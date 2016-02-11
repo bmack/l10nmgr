@@ -311,6 +311,8 @@ class L10nBaseService
                                                     );
                                                     if ($container['uid'] > 0) {
                                                         $TCEmain_cmd['tt_content'][$container['uid']]['inlineLocalizeSynchronize'] = 'tx_gridelements_children,localize';
+                                                    } else {
+                                                        $TCEmain_cmd['tt_content'][$element['tx_gridelements_container']]['localize'] = $Tlang;
                                                     }
                                                 }
                                                 if ($element['tx_flux_parent'] > 0) {
@@ -320,6 +322,8 @@ class L10nBaseService
                                                     );
                                                     if ($parent['uid'] > 0) {
                                                         $TCEmain_cmd['tt_content'][$parent['uid']]['inlineLocalizeSynchronize'] = 'tx_flux_children,localize';
+                                                    } else {
+                                                        $TCEmain_cmd['tt_content'][$element['tx_flux_parent']]['localize'] = $Tlang;
                                                     }
                                                 }
                                             }

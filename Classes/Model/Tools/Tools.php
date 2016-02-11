@@ -553,7 +553,7 @@ class Tools
                                 if ($cfg['config']['type'] == 'flex') {
                                     $dataStructArray = $this->_getFlexFormMetaDataForContentElement($table, $field,
                                         $row);
-                                    if ($dataStructArray['meta']['langDisable'] && $dataStructArray['meta']['langDatabaseOverlay'] == 1) {
+                                    if ($dataStructArray['meta']['langDisable'] && $dataStructArray['meta']['langDatabaseOverlay'] == 1 || $table === 'tt_content' && $row['CType'] === 'fluidcontent_content') {
                                         // Create and call iterator object:
                                         $flexObj = GeneralUtility::makeInstance(FlexFormTools::class);
                                         $this->_callBackParams_keyForTranslationDetails = $key;
@@ -645,6 +645,9 @@ class Tools
                     } elseif ($dataStructArray['meta']['langChildren']) {
                         $translationModes[] = 'flexformInternalTranslation';
                         $this->detailsOutput['log'][] = 'Mode: "flexformInternalTranslation" detected because we have FCE with langChildren';
+                    } elseif ($table === 'tt_content' && $row['CType'] === 'fluidcontent_content') {
+                        $translationModes[] = 'useOverlay';
+                        $this->detailsOutput['log'][] = 'Mode: "useOverlay" detected because we have Fluidcontent content';
                     }
                 } else {
                     $this->detailsOutput['log'][] = 'Mode: "noTranslation" detected because we have corrupt Datastructure!';
