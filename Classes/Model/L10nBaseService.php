@@ -54,6 +54,18 @@ class L10nBaseService
      * @var array Extension's configuration as from the EM
      */
     protected $extensionConfiguration = array();
+    /**
+     * @var array
+     */
+    protected $TCEmain_cmd = array();
+    /**
+     * @var array
+     */
+    protected $TCA = array();
+    /**
+     * @var array
+     */
+    protected $depthCounter = 0;
 
     public function __construct()
     {
@@ -263,7 +275,6 @@ class L10nBaseService
      */
     function _submitContentAsTranslatedLanguageAndGetFlexFormDiff($accum, $inputArray)
     {
-	    global $TCA;
         if (is_array($inputArray)) {
             // Initialize:
             /** @var $flexToolObj FlexFormTools */
@@ -271,7 +282,7 @@ class L10nBaseService
             $gridElementsInstalled = ExtensionManagementUtility::isLoaded('gridelements');
             $fluxInstalled = ExtensionManagementUtility::isLoaded('flux');
             $TCEmain_data = array();
-            $TCEmain_cmd = array();
+            $this->TCEmain_cmd = array();
 
             $_flexFormDiffArray = array();
             // Traverse:
@@ -298,33 +309,19 @@ class L10nBaseService
                                         if ($table === 'tt_content' && ($gridElementsInstalled === true ||  $fluxInstalled === true)) {
                                             $element = BackendUtility::getRecordRaw($table,
                                                     'uid = ' . (int)$elementUid . ' AND deleted = 0');
-                                            if (isset($TCEmain_cmd['tt_content'][$elementUid])) {
-                                                unset($TCEmain_cmd['tt_content'][$elementUid]);
+                                            if (isset($this->TCEmain_cmd['tt_content'][$elementUid])) {
+                                                unset($this->TCEmain_cmd['tt_content'][$elementUid]);
                                             }
                                             if ((int)$element['colPos'] > -1 && (int)$element['colPos'] !== 18181) {
-                                                $TCEmain_cmd['tt_content'][$elementUid]['localize'] = $Tlang;
+                                                $this->TCEmain_cmd['tt_content'][$elementUid]['localize'] = $Tlang;
                                             } else {
                                                 if ($element['tx_gridelements_container'] > 0) {
-                                                    $container = BackendUtility::getRecordRaw('tt_content',
-                                                            $TCA['tt_content']['ctrl']['transOrigPointerField'] . ' = ' . (int)$element['tx_gridelements_container'] . '
-	                                                    AND deleted = 0 AND sys_language_uid = ' . (int)$Tlang
-                                                    );
-                                                    if ($container['uid'] > 0) {
-                                                        $TCEmain_cmd['tt_content'][$container['uid']]['inlineLocalizeSynchronize'] = 'tx_gridelements_children,localize';
-                                                    } else {
-                                                        $TCEmain_cmd['tt_content'][$element['tx_gridelements_container']]['localize'] = $Tlang;
-                                                    }
+                                                    $this->depthCounter = 0;
+                                                    $this->recursivelyCheckForRelationParents($element, $Tlang, 'tx_gridelements_container', 'tx_gridelements_children');
                                                 }
                                                 if ($element['tx_flux_parent'] > 0) {
-                                                    $parent = BackendUtility::getRecordRaw('tt_content',
-                                                            $TCA['tt_content']['ctrl']['transOrigPointerField'] . ' = ' . (int)$element['tx_flux_parent'] . '
-	                                                    AND deleted = 0 AND sys_language_uid = ' . (int)$Tlang
-                                                    );
-                                                    if ($parent['uid'] > 0) {
-                                                        $TCEmain_cmd['tt_content'][$parent['uid']]['inlineLocalizeSynchronize'] = 'tx_flux_children,localize';
-                                                    } else {
-                                                        $TCEmain_cmd['tt_content'][$element['tx_flux_parent']]['localize'] = $Tlang;
-                                                    }
+                                                    $this->depthCounter = 0;
+                                                    $this->recursivelyCheckForRelationParents($element, $Tlang, 'tx_flux_parent', 'tx_flux_children');
                                                 }
                                             }
                                         } elseif ($table === 'sys_file_reference') {
@@ -333,29 +330,29 @@ class L10nBaseService
 		                                        'uid = ' . (int)$elementUid . ' AND deleted = 0');
 	                                        if ($element['uid_foreign'] && $element['tablenames'] && $element['fieldname']) {
 		                                        if ($element['tablenames'] === 'pages') {
-			                                        if (isset($TCEmain_cmd[$table][$elementUid])) {
-				                                        unset($TCEmain_cmd[$table][$elementUid]);
+			                                        if (isset($this->TCEmain_cmd[$table][$elementUid])) {
+				                                        unset($this->TCEmain_cmd[$table][$elementUid]);
 			                                        }
-		                                            $TCEmain_cmd[$table][$elementUid]['localize'] = $Tlang;
+		                                            $this->TCEmain_cmd[$table][$elementUid]['localize'] = $Tlang;
 		                                        } else {
 			                                        $parent = BackendUtility::getRecordRaw($element['tablenames'],
-				                                        $TCA[$element['tablenames']]['ctrl']['transOrigPointerField'] . ' = ' . (int)$element['uid_foreign'] . '
+				                                        $this->TCA[$element['tablenames']]['ctrl']['transOrigPointerField'] . ' = ' . (int)$element['uid_foreign'] . '
 			                                            AND deleted = 0 AND sys_language_uid = ' . (int)$Tlang
 			                                        );
 			                                        if ($parent['uid'] > 0) {
-				                                        if (isset($TCEmain_cmd[$element['tablenames']][$element['uid_foreign']])) {
-					                                        unset($TCEmain_cmd[$element['tablenames']][$element['uid_foreign']]);
+				                                        if (isset($this->TCEmain_cmd[$element['tablenames']][$element['uid_foreign']])) {
+					                                        unset($this->TCEmain_cmd[$element['tablenames']][$element['uid_foreign']]);
 				                                        }
-				                                        $TCEmain_cmd[$element['tablenames']][$element['uid_foreign']]['inlineLocalizeSynchronize'] = $element['fieldname'] . ',localize';
+				                                        $this->TCEmain_cmd[$element['tablenames']][$element['uid_foreign']]['inlineLocalizeSynchronize'] = $element['fieldname'] . ',localize';
 			                                        }
 		                                        }
 	                                        }
                                         } else {
 		                                    //print "\nNEW\n";
-	                                        if (isset($TCEmain_cmd[$table][$elementUid])) {
-		                                        unset($TCEmain_cmd[$table][$elementUid]);
+	                                        if (isset($this->TCEmain_cmd[$table][$elementUid])) {
+		                                        unset($this->TCEmain_cmd[$table][$elementUid]);
 	                                        }
-		                                    $TCEmain_cmd[$table][$elementUid]['localize'] = $Tlang;
+		                                    $this->TCEmain_cmd[$table][$elementUid]['localize'] = $Tlang;
                                         }
                                     }
 
@@ -402,8 +399,8 @@ class L10nBaseService
             }
             $tce->stripslashes_values = false;
             $tce->isImporting = true;
-            if (count($TCEmain_cmd)) {
-                $tce->start(array(), $TCEmain_cmd);
+            if (count($this->TCEmain_cmd)) {
+                $tce->start(array(), $this->TCEmain_cmd);
                 $tce->process_cmdmap();
                 if (count($tce->errorLog)) {
                     debug($tce->errorLog, 'TCEmain localization errors:');
@@ -500,4 +497,29 @@ class L10nBaseService
             return false;
         }
     }
+
+    /**
+     * @param $element
+     * @param $Tlang
+     * @param $parentField
+     * @param $childrenField
+     */
+    function recursivelyCheckForRelationParents($element, $Tlang, $parentField, $childrenField) {
+        $this->depthCounter ++;
+        if ($this->depthCounter < 99) {
+            $parent = BackendUtility::getRecordRaw('tt_content',
+                $this->TCA['tt_content']['ctrl']['transOrigPointerField'] . ' = ' . (int)$element[$parentField] . '
+	                                                    AND deleted = 0 AND sys_language_uid = ' . (int)$Tlang
+            );
+            if ($parent['uid'] > 0) {
+                $this->TCEmain_cmd['tt_content'][$parent['uid']]['inlineLocalizeSynchronize'] = $childrenField, ',localize';
+            } else {
+                if ($parent[$parentField] > 0) {
+                    $this->recursivelyCheckForRelationParents($parent, $Tlang, $parentField, $childrenField);
+                } else {
+                    $this->TCEmain_cmd['tt_content'][$element[$parentField]]['localize'] = $Tlang;
+                }
+            }
+        }
+   }
 }
