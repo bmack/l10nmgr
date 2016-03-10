@@ -512,7 +512,7 @@ class L10nBaseService
 	                                                    AND deleted = 0 AND sys_language_uid = ' . (int)$Tlang
             );
             if ($parent['uid'] > 0) {
-                $this->TCEmain_cmd['tt_content'][$parent['uid']]['inlineLocalizeSynchronize'] = $childrenField, ',localize';
+                $this->TCEmain_cmd['tt_content'][$parent['uid']]['inlineLocalizeSynchronize'] = $childrenField . ',localize';
             } else {
                 if ($parent[$parentField] > 0) {
                     $this->recursivelyCheckForRelationParents($parent, $Tlang, $parentField, $childrenField);
