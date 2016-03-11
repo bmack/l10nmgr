@@ -61,9 +61,9 @@ class L10nBaseService
     /**
      * @var array
      */
-    protected $TCA = array();
+    protected $checkedParentRecords = array();
     /**
-     * @var array
+     * @var int
      */
     protected $depthCounter = 0;
 
@@ -275,6 +275,7 @@ class L10nBaseService
      */
     function _submitContentAsTranslatedLanguageAndGetFlexFormDiff($accum, $inputArray)
     {
+        global $TCA;
         if (is_array($inputArray)) {
             // Initialize:
             /** @var $flexToolObj FlexFormTools */
@@ -336,7 +337,7 @@ class L10nBaseService
 		                                            $this->TCEmain_cmd[$table][$elementUid]['localize'] = $Tlang;
 		                                        } else {
 			                                        $parent = BackendUtility::getRecordRaw($element['tablenames'],
-				                                        $this->TCA[$element['tablenames']]['ctrl']['transOrigPointerField'] . ' = ' . (int)$element['uid_foreign'] . '
+				                                        $TCA[$element['tablenames']]['ctrl']['transOrigPointerField'] . ' = ' . (int)$element['uid_foreign'] . '
 			                                            AND deleted = 0 AND sys_language_uid = ' . (int)$Tlang
 			                                        );
 			                                        if ($parent['uid'] > 0) {
@@ -505,19 +506,24 @@ class L10nBaseService
      * @param $childrenField
      */
     function recursivelyCheckForRelationParents($element, $Tlang, $parentField, $childrenField) {
+        global $TCA;
         $this->depthCounter ++;
-        if ($this->depthCounter < 99) {
-            $parent = BackendUtility::getRecordRaw('tt_content',
-                $this->TCA['tt_content']['ctrl']['transOrigPointerField'] . ' = ' . (int)$element[$parentField] . '
-	                                                    AND deleted = 0 AND sys_language_uid = ' . (int)$Tlang
+        if ($this->depthCounter < 100 && !isset($this->checkedParentRecords[$parentField][$element['uid']])) {
+            $this->checkedParentRecords[$parentField][$element['uid']] = true;
+            $translatedParent = BackendUtility::getRecordRaw('tt_content',
+                $TCA['tt_content']['ctrl']['transOrigPointerField'] . ' = ' . (int)$element[$parentField] . '
+	            AND deleted = 0 AND sys_language_uid = ' . (int)$Tlang
             );
-            if ($parent['uid'] > 0) {
-                $this->TCEmain_cmd['tt_content'][$parent['uid']]['inlineLocalizeSynchronize'] = $childrenField . ',localize';
+            if ($translatedParent['uid'] > 0) {
+                $this->TCEmain_cmd['tt_content'][$translatedParent['uid']]['inlineLocalizeSynchronize'] = $childrenField . ',localize';
             } else {
-                if ($parent[$parentField] > 0) {
+                if ($element[$parentField] > 0) {
+                    $parent = BackendUtility::getRecordRaw('tt_content',
+                        'uid = ' . (int)$element[$parentField] . ' AND deleted = 0'
+                    );
                     $this->recursivelyCheckForRelationParents($parent, $Tlang, $parentField, $childrenField);
                 } else {
-                    $this->TCEmain_cmd['tt_content'][$element[$parentField]]['localize'] = $Tlang;
+                    $this->TCEmain_cmd['tt_content'][$element['uid']]['localize'] = $Tlang;
                 }
             }
         }
