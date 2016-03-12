@@ -3,24 +3,19 @@ namespace Localizationteam\L10nmgr\Modules\Module2List;
 
 /***************************************************************
  *  Copyright notice
- *
  *  (c) 2007 Kasper Skårhøj <kasperYYYY@typo3.com>
  *  All rights reserved
- *
  *  This script is part of the TYPO3 project. The TYPO3 project is
  *  free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *
  *  The GNU General Public License can be found at
  *  http://www.gnu.org/copyleft/gpl.html.
- *
  *  This script is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 /**
@@ -29,26 +24,27 @@ namespace Localizationteam\L10nmgr\Modules\Module2List;
  * @author  Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 
+use Localizationteam\L10nmgr\Hooks\Tcemain;
+use Localizationteam\L10nmgr\Model\Tools\Tools;
 use TYPO3\CMS\Backend\Module\BaseScriptClass;
 use TYPO3\CMS\Backend\Template\DocumentTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Backend\Utility\IconUtility;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Localizationteam\L10nmgr\Hooks\Tcemain;
-use Localizationteam\L10nmgr\Model\Tools\Tools;
 
 class Module2List extends BaseScriptClass
 {
 
     var $pageinfo;
 
-	function init() {
-		$this->MCONF['name'] = 'xMOD_Module2List';
-		$GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
-		$GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/Module2/locallang.xlf");
-		parent::init();
-	}
+    function init()
+    {
+        $this->MCONF['name'] = 'xMOD_Module2List';
+        $GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
+        $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/Module2/locallang.xlf");
+        parent::init();
+    }
 
     /**
      * Adds items to the ->MOD_MENU array. Used for the function menu selector.
@@ -61,11 +57,11 @@ class Module2List extends BaseScriptClass
         parent::menuConfig();
     }
 
-	/**
-	 * Main function of the module. Write the content to $this->content
-	 * If you chose "web" as main module, you will need to consider the $this->id parameter which will contain the uid-number of the page clicked in the page tree
-	 *
-	 */
+    /**
+     * Main function of the module. Write the content to $this->content
+     * If you chose "web" as main module, you will need to consider the $this->id parameter which will contain the uid-number of the page clicked in the page tree
+
+     */
     function main()
     {
         // Draw the header.
@@ -167,11 +163,11 @@ class Module2List extends BaseScriptClass
 
             foreach ($elements as $el) {
                 $cells = '';
-				$rec_on = array();
+                $rec_on = array();
                 // Get CURRENT online record and icon based on "t3ver_oid":
-	            if ($el[0] !== '' && $el[1] > 0) {
-		            $rec_on = BackendUtility::getRecord($el[0], $el[1]);
-	            }
+                if ($el[0] !== '' && $el[1] > 0) {
+                    $rec_on = BackendUtility::getRecord($el[0], $el[1]);
+                }
                 $icon = IconUtility::getSpriteIconForRecord($el[0], $rec_on);
                 $icon = $this->doc->wrapClickMenuOnIcon($icon, $el[0], $rec_on['uid'], 2);
 

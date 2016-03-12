@@ -1,32 +1,28 @@
 <?php
 namespace Localizationteam\L10nmgr\Controller;
-/***************************************************************
- *  Copyright notice
- *
- *  (c) 2006 Kasper Skårhøj <kasperYYYY@typo3.com>
- *  All rights reserved
- *
- *  This script is part of the TYPO3 project. The TYPO3 project is
- *  free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  The GNU General Public License can be found at
- *  http://www.gnu.org/copyleft/gpl.html.
- *
- *  This script is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
-/**
- * Module 'L10N Manager' for the 'l10nmgr' extension.
- *
- * @author  Kasper Skårhøj <kasperYYYY@typo3.com>
- */
+
+    /***************************************************************
+     *  Copyright notice
+     *  (c) 2006 Kasper Skårhøj <kasperYYYY@typo3.com>
+     *  All rights reserved
+     *  This script is part of the TYPO3 project. The TYPO3 project is
+     *  free software; you can redistribute it and/or modify
+     *  it under the terms of the GNU General Public License as published by
+     *  the Free Software Foundation; either version 2 of the License, or
+     *  (at your option) any later version.
+     *  The GNU General Public License can be found at
+     *  http://www.gnu.org/copyleft/gpl.html.
+     *  This script is distributed in the hope that it will be useful,
+     *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+     *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     *  GNU General Public License for more details.
+     *  This copyright notice MUST APPEAR in all copies of the script!
+     ***************************************************************/
+    /**
+     * Module 'L10N Manager' for the 'l10nmgr' extension.
+     *
+     * @author  Kasper Skårhøj <kasperYYYY@typo3.com>
+     */
 
 // DEFAULT initialization of a module [BEGIN]
 use TYPO3\CMS\Backend\Module\BaseScriptClass;
@@ -58,6 +54,13 @@ class Module1 extends BaseScriptClass
      */
     protected $languageDetails = array();
 
+    public function mainAction()
+    {
+        $this->init();
+        $this->main();
+        $this->printContent();
+    }
+
     /**
      * Initializes the Module
      *
@@ -66,8 +69,8 @@ class Module1 extends BaseScriptClass
     public function init()
     {
         $this->MCONF['name'] = 'web_txl10nmgrM1';
-	    $GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
-	    $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/Module1/locallang.xlf");
+        $GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
+        $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/Module1/locallang.xlf");
         parent::init();
     }
 
@@ -124,18 +127,18 @@ class Module1 extends BaseScriptClass
         } else {
             $content .= $this->doc->section('', nl2br($GLOBALS['LANG']->getLL('general.description.message')));
             $content .= $this->doc->section($GLOBALS['LANG']->getLL('general.list.configuration.title'), '');
-            $content .= '<table class="typo3-dblist" border="0" cellpadding="0" cellspacing="0">';
+            $content .= '<div class="table-fit"><table class="table table-striped table-hover">';
             // Assemble the header row
             $content .= '<thead>';
-            $content .= '<tr class="t3-row-header">';
-            $content .= '<td>' . $GLOBALS['LANG']->getLL('general.list.headline.info.title') . '</td>';
-            $content .= '<td>' . $GLOBALS['LANG']->getLL('general.list.headline.title.title') . '</td>';
-            $content .= '<td>' . $GLOBALS['LANG']->getLL('general.list.headline.path.title') . '</td>';
-            $content .= '<td>' . $GLOBALS['LANG']->getLL('general.list.headline.depth.title') . '</td>';
-            $content .= '<td>' . $GLOBALS['LANG']->getLL('general.list.headline.tables.title') . '</td>';
-            $content .= '<td>' . $GLOBALS['LANG']->getLL('general.list.headline.exclude.title') . '</td>';
-            $content .= '<td>' . $GLOBALS['LANG']->getLL('general.list.headline.include.title') . '</td>';
-            $content .= '<td>' . $GLOBALS['LANG']->getLL('general.list.headline.incfcewithdefaultlanguage.title') . '</td>';
+            $content .= '<tr>';
+            $content .= '<th nowrap="nowrap" class="col-info">' . $GLOBALS['LANG']->getLL('general.list.headline.info.title') . '</th>';
+            $content .= '<th nowrap="nowrap" class="col-title">' . $GLOBALS['LANG']->getLL('general.list.headline.title.title') . '</th>';
+            $content .= '<th nowrap="nowrap" class="col-path">' . $GLOBALS['LANG']->getLL('general.list.headline.path.title') . '</th>';
+            $content .= '<th nowrap="nowrap" class="col-depth">' . $GLOBALS['LANG']->getLL('general.list.headline.depth.title') . '</th>';
+            $content .= '<th class="col-tables">' . $GLOBALS['LANG']->getLL('general.list.headline.tables.title') . '</th>';
+            $content .= '<th class="col-exclude">' . $GLOBALS['LANG']->getLL('general.list.headline.exclude.title') . '</th>';
+            $content .= '<th class="col-include">' . $GLOBALS['LANG']->getLL('general.list.headline.include.title') . '</th>';
+            $content .= '<th class="col-incfcewithdefaultlanguage">' . $GLOBALS['LANG']->getLL('general.list.headline.incfcewithdefaultlanguage.title') . '</th>';
             $content .= '</tr>';
             $content .= '</thead>';
             $content .= '<tbody>';
@@ -148,9 +151,9 @@ class Module1 extends BaseScriptClass
                 $content .= '<tr class="db_list_normal">';
                 $content .= '<td>' . $configurationDetails . '</td>';
                 $content .= '<td><a href="' . BackendUtility::getModuleUrl('xMOD_txl10nmgrCM1', array(
-		                'id' => $record['uid'],
-		                'srcPID' => (int)$this->id
-	                )) . '">' . $record['title'] . '</a>' . '</td>';
+                        'id' => $record['uid'],
+                        'srcPID' => (int)$this->id
+                    )) . '">' . $record['title'] . '</a>' . '</td>';
                 // Get the full page path
                 // If very long, make sure to still display the full path
                 $pagePath = BackendUtility::getRecordPath($record['pid'], '1', 20, 50);
@@ -163,7 +166,7 @@ class Module1 extends BaseScriptClass
                 $content .= '<td>' . $record['incfcewithdefaultlanguage'] . '</td>';
                 $content .= '</tr>';
             }
-            $content .= '</tbody>';
+            $content .= '</tbody></table></div>';
         }
 
         return $content;
@@ -177,11 +180,8 @@ class Module1 extends BaseScriptClass
     protected function getAllConfigurations()
     {
         // Read all l10nmgr configurations from the database
-        $configurations = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-            '*',
-            'tx_l10nmgr_cfg',
-            '1=1' . BackendUtility::deleteClause('tx_l10nmgr_cfg')
-        );
+        $configurations = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'tx_l10nmgr_cfg',
+            '1=1' . BackendUtility::deleteClause('tx_l10nmgr_cfg'));
         // Filter out the configurations which the user is allowed to see, base on the page access rights
         $pagePermissionsClause = $GLOBALS['BE_USER']->getPagePermsClause(1);
         $allowedConfigurations = array();
@@ -198,6 +198,7 @@ class Module1 extends BaseScriptClass
      * Renders a detailed view of a l10nmgr configuration
      *
      * @param array $configuration A configuration record from the database
+     *
      * @return string The HTML to display
      */
     protected function renderConfigurationDetails($configuration)
@@ -205,7 +206,7 @@ class Module1 extends BaseScriptClass
         $parentPageArray = $this->getPageDetails($configuration['pid']);
         $languageArray = $this->getPageDetails($configuration['sourceLangStaticId']);
         $details = '';
-        $details .= '<table class="typo3-dblist" border="0" cellspacing="0" cellpadding="0">';
+        $details .= '<table class="table table-striped table-hover" border="0" cellspacing="0" cellpadding="0">';
         $details .= '<tr>';
         $details .= '<td>' . $GLOBALS['LANG']->getLL('general.list.infodetail.pid.title') . '</td>';
         $details .= '<td>' . $parentPageArray['title'] . ' (' . $parentPageArray['uid'] . ')</td>';
@@ -246,6 +247,7 @@ class Module1 extends BaseScriptClass
      * Returns the details of a given page record, possibly from cache if already fetched earlier
      *
      * @param int $uid Id of a page
+     *
      * @return array Page record from the database
      */
     protected function getPageDetails($uid)
@@ -271,9 +273,7 @@ class Module1 extends BaseScriptClass
         $buttons = array();
 
         $buttons['reload'] = '<a href="' . $GLOBALS['MCONF']['_'] . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:labels.reload',
-                true) . '">' .
-            IconUtility::getSpriteIcon('actions-system-refresh', array()) .
-            '</a>';
+                true) . '">' . IconUtility::getSpriteIcon('actions-system-refresh', array()) . '</a>';
 
         // Shortcut
         if ($GLOBALS['BE_USER']->mayMakeShortcut()) {
@@ -297,6 +297,7 @@ class Module1 extends BaseScriptClass
      * Returns the details of a given static language record, possibly from cache if already fetched earlier
      *
      * @param int $uid Id of a language
+     *
      * @return array Language record from the database
      */
     protected function getLanguageDetails($uid)

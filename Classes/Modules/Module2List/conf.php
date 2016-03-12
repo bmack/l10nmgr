@@ -1,7 +1,7 @@
 <?php
 
-$MLANG = array (
-    'default' => array (
+$MLANG = array(
+    'default' => array(
         'tabs_images' => array(
             'tab' => '../../../Resources/Public/Icons/module2_icon.gif',
         ),

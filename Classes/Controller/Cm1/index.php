@@ -3,29 +3,34 @@ namespace Localizationteam\L10nmgr\Controller\Cm1;
 
 /***************************************************************
  *  Copyright notice
- *
  *  (c) 2006 Kasper Skårhøj <kasperYYYY@typo3.com>
  *  All rights reserved
- *
  *  This script is part of the TYPO3 project. The TYPO3 project is
  *  free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *
  *  The GNU General Public License can be found at
  *  http://www.gnu.org/copyleft/gpl.html.
- *
  *  This script is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use Localizationteam\L10nmgr\Model\CatXmlImportManager;
+use Localizationteam\L10nmgr\Model\L10nBaseService;
+use Localizationteam\L10nmgr\Model\L10nConfiguration;
+use Localizationteam\L10nmgr\Model\MkPreviewLinkService;
+use Localizationteam\L10nmgr\Model\TranslationData;
+use Localizationteam\L10nmgr\Model\TranslationDataFactory;
 use Localizationteam\L10nmgr\View\AbstractExportView;
-use TYPO3\CMS\Backend\Module\BaseScriptClass;
+use Localizationteam\L10nmgr\View\CatXmlView;
+use Localizationteam\L10nmgr\View\ExcelXmlView;
+use Localizationteam\L10nmgr\View\L10nConfigurationDetailView;
+use Localizationteam\L10nmgr\View\L10nHtmlListView;
 use TYPO3\CMS\Backend\Configuration\TranslationConfigurationProvider;
+use TYPO3\CMS\Backend\Module\BaseScriptClass;
 use TYPO3\CMS\Backend\Template\DocumentTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Backend\Utility\IconUtility;
@@ -33,16 +38,6 @@ use TYPO3\CMS\Core\Mail\MailMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Utility\DiffUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Localizationteam\L10nmgr\Model\CatXmlImportManager;
-use Localizationteam\L10nmgr\Model\L10nBaseService;
-use Localizationteam\L10nmgr\Model\L10nConfiguration;
-use Localizationteam\L10nmgr\Model\MkPreviewLinkService;
-use Localizationteam\L10nmgr\Model\TranslationData;
-use Localizationteam\L10nmgr\Model\TranslationDataFactory;
-use Localizationteam\L10nmgr\View\CatXmlView;
-use Localizationteam\L10nmgr\View\ExcelXmlView;
-use Localizationteam\L10nmgr\View\L10nConfigurationDetailView;
-use Localizationteam\L10nmgr\View\L10nHtmlListView;
 
 
 /**
@@ -56,9 +51,6 @@ use Localizationteam\L10nmgr\View\L10nHtmlListView;
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
  *   68: class tx_l10nmgr_cm1 extends t3lib_SCbase
  *   75:     function menuConfig()
  *   89:     function main()
@@ -69,10 +61,9 @@ use Localizationteam\L10nmgr\View\L10nHtmlListView;
  *  265:     function diffCMP($old, $new)
  *  278:     function submitContent($accum,$inputArray)
  *  376:     function getAccumulated($tree, $l10ncfg, $sysLang)
- *
  * TOTAL FUNCTIONS: 9
  * (This index is automatically created/updated by the extension "extdeveval")
- *
+
  */
 
 /**
@@ -82,7 +73,6 @@ use Localizationteam\L10nmgr\View\L10nHtmlListView;
  * @package TYPO3
  * @subpackage tx_l10nmgr
  */
-
 class Cm1 extends BaseScriptClass
 {
 
@@ -96,20 +86,20 @@ class Cm1 extends BaseScriptClass
      */
     protected $lConf = array();
 
-	/**
-	 * Initializes the Module
-	 *
-	 * @return  void
-	 */
-	public function init()
-	{
-		$this->MCONF['name'] = 'xMOD_txl10nmgrCM1';
-		$GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
-		$GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/Cm1/locallang.xlf");
-		parent::init();
-	}
+    /**
+     * Initializes the Module
+     *
+     * @return  void
+     */
+    public function init()
+    {
+        $this->MCONF['name'] = 'xMOD_txl10nmgrCM1';
+        $GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
+        $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/Cm1/locallang.xlf");
+        parent::init();
+    }
 
-	/**
+    /**
      * Adds items to the ->MOD_MENU array. Used for the function menu selector.
      *
      * @return  void
@@ -152,7 +142,6 @@ class Cm1 extends BaseScriptClass
      * The function loadExtConf loads the extension configuration.
      *
      * @return void
-     *
      */
     function loadExtConf()
     {
@@ -202,33 +191,31 @@ class Cm1 extends BaseScriptClass
             if ($this->id && $access) {
 
                 // Header:
-//				$this->content.=$this->doc->startPage($GLOBALS['LANG']->getLL('general.title'));
-//				$this->content.=$this->doc->header($GLOBALS['LANG']->getLL('general.title'));
+                //				$this->content.=$this->doc->startPage($GLOBALS['LANG']->getLL('general.title'));
+                //				$this->content.=$this->doc->header($GLOBALS['LANG']->getLL('general.title'));
 
                 // Create and render view to show details for the current l10nmgrcfg
                 /** @var $l10nmgrconfigurationView L10nConfigurationDetailView */
-                $l10nmgrconfigurationView = GeneralUtility::makeInstance(L10nConfigurationDetailView::class, $l10ncfgObj, $this->doc);
+                $l10nmgrconfigurationView = GeneralUtility::makeInstance(L10nConfigurationDetailView::class,
+                    $l10ncfgObj, $this->doc);
                 $this->content .= $this->doc->section('', $l10nmgrconfigurationView->render());
 
                 $this->content .= $this->doc->divider(15);
                 $this->content .= $this->doc->section($GLOBALS['LANG']->getLL('general.export.choose.action.title'),
                     BackendUtility::getFuncMenu($l10ncfgObj->getId(), "SET[lang]", $this->sysLanguage,
                         $this->MOD_MENU["lang"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) .
-                    BackendUtility::getFuncMenu($l10ncfgObj->getId(), "SET[action]", $this->MOD_SETTINGS["action"],
-                        $this->MOD_MENU["action"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) .
-                    BackendUtility::getFuncCheck($l10ncfgObj->getId(), "SET[onlyChangedContent]",
-                        $this->MOD_SETTINGS["onlyChangedContent"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . ' ' . $GLOBALS['LANG']->getLL('export.xml.new.title') .
-                    BackendUtility::getFuncCheck($l10ncfgObj->getId(), "SET[noHidden]", $this->MOD_SETTINGS["noHidden"],
-                        '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . ' ' . $GLOBALS['LANG']->getLL('export.xml.noHidden.title') . '</br>'
-                );
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . BackendUtility::getFuncMenu($l10ncfgObj->getId(),
+                        "SET[action]", $this->MOD_SETTINGS["action"], $this->MOD_MENU["action"], '',
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . BackendUtility::getFuncCheck($l10ncfgObj->getId(),
+                        "SET[onlyChangedContent]", $this->MOD_SETTINGS["onlyChangedContent"], '',
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . ' ' . $GLOBALS['LANG']->getLL('export.xml.new.title') . BackendUtility::getFuncCheck($l10ncfgObj->getId(),
+                        "SET[noHidden]", $this->MOD_SETTINGS["noHidden"], '',
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . ' ' . $GLOBALS['LANG']->getLL('export.xml.noHidden.title') . '</br>');
 
                 // Render content:
                 if (!count($this->MOD_MENU['lang'])) {
-                    $this->content .= $this->doc->section('ERROR', $GLOBALS['LANG']->getLL('general.access.error.title'));
+                    $this->content .= $this->doc->section('ERROR',
+                        $GLOBALS['LANG']->getLL('general.access.error.title'));
                 } else {
                     $this->moduleContent($l10ncfgObj);
                 }
@@ -251,6 +238,7 @@ class Cm1 extends BaseScriptClass
      * Creating module content
      *
      * @param   array    Localization Configuration record
+     *
      * @return  void
      */
     function moduleContent($l10ncfgObj)
@@ -261,8 +249,7 @@ class Cm1 extends BaseScriptClass
             case 'inlineEdit':
             case 'link':
                 /** @var $htmlListView L10nHTMLListView */
-                $htmlListView = GeneralUtility::makeInstance(L10nHtmlListView::class,
-                    $l10ncfgObj, $this->sysLanguage);
+                $htmlListView = GeneralUtility::makeInstance(L10nHtmlListView::class, $l10ncfgObj, $this->sysLanguage);
                 $subheader = $GLOBALS['LANG']->getLL('inlineEdit');
                 $subcontent = '';
 
@@ -376,8 +363,7 @@ class Cm1 extends BaseScriptClass
 
             // Render the XML
             /** @var $viewClass ExcelXmlView */
-            $viewClass = GeneralUtility::makeInstance(ExcelXmlView::class, $l10ncfgObj,
-                $this->sysLanguage);
+            $viewClass = GeneralUtility::makeInstance(ExcelXmlView::class, $l10ncfgObj, $this->sysLanguage);
             $export_xml_forcepreviewlanguage = (int)GeneralUtility::_POST('export_xml_forcepreviewlanguage');
             if ($export_xml_forcepreviewlanguage > 0) {
                 $viewClass->setForcedSourceLanguage($export_xml_forcepreviewlanguage);
@@ -393,8 +379,8 @@ class Cm1 extends BaseScriptClass
             if ((GeneralUtility::_POST('check_exports') == '1') && ($viewClass->checkExports() == false)) {
                 /** @var $flashMessage FlashMessage */
                 $flashMessage = GeneralUtility::makeInstance(FlashMessage::class,
-                    $GLOBALS['LANG']->getLL('export.process.duplicate.message'), $GLOBALS['LANG']->getLL('export.process.duplicate.title'),
-                    FlashMessage::INFO);
+                    $GLOBALS['LANG']->getLL('export.process.duplicate.message'),
+                    $GLOBALS['LANG']->getLL('export.process.duplicate.title'), FlashMessage::INFO);
                 $info .= $flashMessage->render();
                 $info .= $viewClass->renderExports();
             } else {
@@ -413,8 +399,7 @@ class Cm1 extends BaseScriptClass
                     $status = FlashMessage::ERROR;
                 }
                 /** @var $flashMessage FlashMessage */
-                $flashMessage = GeneralUtility::makeInstance(FlashMessage::class, $message,
-                    $title, $status);
+                $flashMessage = GeneralUtility::makeInstance(FlashMessage::class, $message, $title, $status);
                 $info .= $flashMessage->render();
                 $info .= $viewClass->renderInternalMessagesAsFlashMessage($status);
 
@@ -431,9 +416,7 @@ class Cm1 extends BaseScriptClass
 
         foreach ($menuItems as $value => $label) {
             $options[] = '<option value="' . htmlspecialchars($value) . '"' . (!strcmp($currentValue,
-                    $value) ? ' selected="selected"' : '') . '>' .
-                GeneralUtility::deHSCentities(htmlspecialchars($label)) .
-                '</option>';
+                    $value) ? ' selected="selected"' : '') . '>' . GeneralUtility::deHSCentities(htmlspecialchars($label)) . '</option>';
         }
 
         if (count($options) > 0) {
@@ -451,6 +434,7 @@ class Cm1 extends BaseScriptClass
      * Used for excelXML and CATXML.
      *
      * @param AbstractExportView $xmlView Object for generating the XML export
+     *
      * @return string $filename
      */
     protected function downloadXML(AbstractExportView $xmlView)
@@ -516,16 +500,14 @@ class Cm1 extends BaseScriptClass
         $info .= '<input type="file" size="60" name="uploaded_import_file" /><br /><br /><input type="submit" value="Import" name="import_xml" /><br /><br /> ';
         $info .= '</div>';
         $info .= '<div id="sc3" class="tabcontent">';
-        $info .= $this->doc->icons(1) .
-            $GLOBALS['LANG']->getLL('file.settings.available.title');
+        $info .= $this->doc->icons(1) . $GLOBALS['LANG']->getLL('file.settings.available.title');
 
         for (reset($allowedSettingFiles); list($settingId, $settingFileName) = each($allowedSettingFiles);) {
             $currentFile = GeneralUtility::resolveBackPath($BACK_PATH . \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('l10nmgr') . 'settings/' . $settingFileName);
 
             if (is_file($currentFile) && is_readable($currentFile)) {
 
-                $size = GeneralUtility::formatSize((int)filesize($currentFile),
-                    ' Bytes| KB| MB| GB');
+                $size = GeneralUtility::formatSize((int)filesize($currentFile), ' Bytes| KB| MB| GB');
                 $info .= '<br/><a href="' . GeneralUtility::rawUrlEncodeFP($currentFile) . '" title="' . $GLOBALS['LANG']->getLL('file.settings.download.title') . '" target="_blank">' . $GLOBALS['LANG']->getLL('file.settings.' . $settingId . '.title') . ' (' . $size . ')' . '</a> ';
             }
         }
@@ -558,8 +540,7 @@ class Cm1 extends BaseScriptClass
             } else {
                 // Relevant processing of XML Import with the help of the Importmanager
                 /** @var $importManager CatXmlImportManager */
-                $importManager = GeneralUtility::makeInstance(CatXmlImportManager::class,
-                    $uploadedTempFile,
+                $importManager = GeneralUtility::makeInstance(CatXmlImportManager::class, $uploadedTempFile,
                     $this->sysLanguage, $xmlString = "");
                 if ($importManager->parseAndCheckXMLFile() === false) {
                     $actionInfo .= '<br/><br/>' . $this->doc->header($GLOBALS['LANG']->getLL('import.error.title')) . $importManager->getErrorMessages();
@@ -592,13 +573,11 @@ class Cm1 extends BaseScriptClass
         // If export of XML is asked for, do that (this will exit and push a file for download, or upload to FTP is option is checked)
         if (GeneralUtility::_POST('export_xml')) {
             // Save user prefs
-            $BE_USER->pushModuleData('l10nmgr/cm1/checkUTF8',
-                GeneralUtility::_POST('check_utf8'));
+            $BE_USER->pushModuleData('l10nmgr/cm1/checkUTF8', GeneralUtility::_POST('check_utf8'));
 
             // Render the XML
             /** @var $viewClass CatXmlView */
-            $viewClass = GeneralUtility::makeInstance(CatXmlView::class, $l10ncfgObj,
-                $this->sysLanguage);
+            $viewClass = GeneralUtility::makeInstance(CatXmlView::class, $l10ncfgObj, $this->sysLanguage);
             $export_xml_forcepreviewlanguage = (int)GeneralUtility::_POST('export_xml_forcepreviewlanguage');
             if ($export_xml_forcepreviewlanguage > 0) {
                 $viewClass->setForcedSourceLanguage($export_xml_forcepreviewlanguage);
@@ -613,8 +592,8 @@ class Cm1 extends BaseScriptClass
             if ((GeneralUtility::_POST('check_exports') == '1') && ($viewClass->checkExports() == false)) {
                 /** @var $flashMessage FlashMessage */
                 $flashMessage = GeneralUtility::makeInstance(FlashMessage::class,
-                    $GLOBALS['LANG']->getLL('export.process.duplicate.message'), $GLOBALS['LANG']->getLL('export.process.duplicate.title'),
-                    FlashMessage::INFO);
+                    $GLOBALS['LANG']->getLL('export.process.duplicate.message'),
+                    $GLOBALS['LANG']->getLL('export.process.duplicate.title'), FlashMessage::INFO);
                 $actionInfo .= $flashMessage->render();
                 $actionInfo .= $viewClass->renderExports();
             } else {
@@ -636,8 +615,7 @@ class Cm1 extends BaseScriptClass
                         $status = FlashMessage::ERROR;
                     }
                     /** @var $flashMessage FlashMessage */
-                    $flashMessage = GeneralUtility::makeInstance(FlashMessage::class, $message,
-                        $title, $status);
+                    $flashMessage = GeneralUtility::makeInstance(FlashMessage::class, $message, $title, $status);
                     $actionInfo .= $flashMessage->render();
                     $actionInfo .= $viewClass->renderInternalMessagesAsFlashMessage($status);
                     // Download the XML file
@@ -646,8 +624,7 @@ class Cm1 extends BaseScriptClass
                         $filename = $this->downloadXML($viewClass);
                         // Prepare a success message for display
                         $link = sprintf('<a href="%s" target="_blank">%s</a>',
-                            GeneralUtility::getIndpEnv('TYPO3_SITE_URL') . $filename,
-                            $filename);
+                            GeneralUtility::getIndpEnv('TYPO3_SITE_URL') . $filename, $filename);
                         $title = $GLOBALS['LANG']->getLL('export.download.success');
                         $message = sprintf($GLOBALS['LANG']->getLL('export.download.success.detail'), $link);
                         $status = FlashMessage::OK;
@@ -659,8 +636,7 @@ class Cm1 extends BaseScriptClass
                     }
 
                     /** @var $flashMessage FlashMessage */
-                    $flashMessage = GeneralUtility::makeInstance(FlashMessage::class, $message,
-                        $title, $status);
+                    $flashMessage = GeneralUtility::makeInstance(FlashMessage::class, $message, $title, $status);
                     $actionInfo .= $flashMessage->render();
                     $actionInfo .= $viewClass->renderInternalMessagesAsFlashMessage($status);
                 }
@@ -682,6 +658,7 @@ class Cm1 extends BaseScriptClass
      * Uploads the XML export to the FTP server
      *
      * @param CatXmlView $xmlView Object for generating the XML export
+     *
      * @return string The file name, if successful
      * @throws Exception
      */
@@ -723,6 +700,7 @@ class Cm1 extends BaseScriptClass
      * @param string $xmlFileName Name of the XML file
      * @param L10nConfiguration $l10nmgrCfgObj L10N Manager configuration object
      * @param integer $tlang ID of the language to translate to
+     *
      * @return void
      */
     protected function emailNotification($xmlFileName, $l10nmgrCfgObj, $tlang)
@@ -736,8 +714,8 @@ class Cm1 extends BaseScriptClass
             $sourceStaticLangArr = BackendUtility::getRecord('static_languages',
                 $l10nmgrCfgObj->l10ncfg['sourceLangStaticId'], 'lg_iso_2');
             $targetStaticLang = BackendUtility::getRecord('sys_language', $tlang, 'static_lang_isocode');
-            $targetStaticLangArr = BackendUtility::getRecord('static_languages', $targetStaticLang['static_lang_isocode'],
-                'lg_iso_2');
+            $targetStaticLangArr = BackendUtility::getRecord('static_languages',
+                $targetStaticLang['static_lang_isocode'], 'lg_iso_2');
             $sourceLang = $sourceStaticLangArr['lg_iso_2'];
             $targetLang = $targetStaticLangArr['lg_iso_2'];
             // Collect mail data
@@ -793,9 +771,7 @@ class Cm1 extends BaseScriptClass
         $buttons = array();
 
         $buttons['reload'] = '<a href="' . $GLOBALS['MCONF']['_'] . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:labels.reload',
-                true) . '">' .
-            IconUtility::getSpriteIcon('actions-system-refresh', array()) .
-            '</a>';
+                true) . '">' . IconUtility::getSpriteIcon('actions-system-refresh', array()) . '</a>';
 
         // Shortcut
         if ($GLOBALS['BE_USER']->mayMakeShortcut()) {
@@ -813,7 +789,7 @@ class Cm1 extends BaseScriptClass
     public function printContent()
     {
 
-//		$this->content .= $this->doc->endPage();
+        //		$this->content .= $this->doc->endPage();
         echo $this->content;
     }
 
@@ -822,6 +798,7 @@ class Cm1 extends BaseScriptClass
      *
      * @param   string    Old content
      * @param   string    New content
+     *
      * @return  string    Marked up string.
      */
     function diffCMP($old, $new)
@@ -836,6 +813,7 @@ class Cm1 extends BaseScriptClass
     /**
      * @param string Mime type
      * @param string Filename
+     *
      * @return void
      */
     protected function sendDownloadHeader($mimeType, $filename)
