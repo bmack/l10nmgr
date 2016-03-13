@@ -112,7 +112,6 @@ class LocalizationManager extends BaseScriptClass
     {
         $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
         $this->moduleTemplate = GeneralUtility::makeInstance(ModuleTemplate::class);
-        $this->moduleTemplate->getPageRenderer()->addCssFile(ExtensionManagementUtility::extRelPath('l10nmgr'). 'Resources/Public/Css/l10nmgr.css');
         $this->getLanguageService()->includeLLFile('EXT:l10nmgr/Resources/Private/Language/Modules/LocalizationManager/locallang.xlf');
         $this->MCONF = array(
             'name' => $this->moduleName,
@@ -411,11 +410,8 @@ class LocalizationManager extends BaseScriptClass
                     $this->_getSelectField("export_xml_forcepreviewlanguage", '0', $_selectOptions) .
                 '<br /><br /></div></div><div class="form-section">
                 <label>' . $GLOBALS['LANG']->getLL('general.action.import.upload.title') . '</label><br />' .
-                    '<span class="btn btn-default btn-file">' .
-                        $GLOBALS['LANG']->getLL('general.action.import.upload.button.title') .
                         '<input type="file" size="60" name="uploaded_import_file" />' .
-                    '</span>' .
-                '<br /><br /></div><div class="form-section">' .
+                '<br /></div><div class="form-section">' .
                     '<input class="btn btn-default" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /> ' .
                     '<input class="btn btn-default" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.export.xml.button.title') . '" name="export_excel" /> ' .
                     '<input class="btn btn-default" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.import.xml.button.title') . '" name="import_excel" />
