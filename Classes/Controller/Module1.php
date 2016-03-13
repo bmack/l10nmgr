@@ -29,6 +29,7 @@ use TYPO3\CMS\Backend\Module\BaseScriptClass;
 use TYPO3\CMS\Backend\Template\DocumentTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Backend\Utility\IconUtility;
+use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -54,6 +55,14 @@ class Module1 extends BaseScriptClass
      */
     protected $languageDetails = array();
 
+    /**
+     * @var IconFactory
+     */
+    protected $iconFactory = array();
+
+    /**
+     * main action to be registered in ext_tables.php
+     */
     public function mainAction()
     {
         $this->init();
@@ -69,6 +78,7 @@ class Module1 extends BaseScriptClass
     public function init()
     {
         $this->MCONF['name'] = 'web_txl10nmgrM1';
+        $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
         $GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
         $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/Module1/locallang.xlf");
         parent::init();
@@ -142,7 +152,7 @@ class Module1 extends BaseScriptClass
             $content .= '</tr>';
             $content .= '</thead>';
             $content .= '<tbody>';
-            $informationIcon = IconUtility::getSpriteIcon('actions-document-info', array());
+            $informationIcon = $this->iconFactory->getIcon('actions-document-info');
             foreach ($l10nConfigurations as $record) {
                 $configurationDetails = '<a class="tooltip" href="#tooltip_' . $record['uid'] . '">' . $informationIcon . '</a>';
                 $configurationDetails .= '<div style="display:none;" id="tooltip_' . $record['uid'] . '" class="infotip">';
@@ -150,7 +160,7 @@ class Module1 extends BaseScriptClass
                 $configurationDetails .= '</div>';
                 $content .= '<tr class="db_list_normal">';
                 $content .= '<td>' . $configurationDetails . '</td>';
-                $content .= '<td><a href="' . BackendUtility::getModuleUrl('xMOD_txl10nmgrCM1', array(
+                $content .= '<td><a href="' . BackendUtility::getModuleUrl('txl10nmgrM1_txl10nmgrCM1', array(
                         'id' => $record['uid'],
                         'srcPID' => (int)$this->id
                     )) . '">' . $record['title'] . '</a>' . '</td>';
@@ -273,7 +283,7 @@ class Module1 extends BaseScriptClass
         $buttons = array();
 
         $buttons['reload'] = '<a href="' . $GLOBALS['MCONF']['_'] . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:labels.reload',
-                true) . '">' . IconUtility::getSpriteIcon('actions-system-refresh', array()) . '</a>';
+                true) . '">' . $this->iconFactory->getIcon('actions-system-refresh') . '</a>';
 
         // Shortcut
         if ($GLOBALS['BE_USER']->mayMakeShortcut()) {

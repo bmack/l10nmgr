@@ -24,10 +24,10 @@ if (TYPO3_MODE == "BE") {
     /**
      * Registers a Backend Module
      */
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule('xMOD', 'txl10nmgrCM1', '', '', array(
-            'routeTarget' => \Localizationteam\L10nmgr\Controller\Cm1::class . '::main',
+    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule('txl10nmgrM1', 'txl10nmgrCM1', '', '', array(
+            'routeTarget' => \Localizationteam\L10nmgr\Controller\Cm1::class . '::mainAction',
             'access' => 'user,group',
-            'name' => 'xMOD_txl10nmgrCM1',
+            'name' => 'txl10nmgrM1_txl10nmgrCM1',
             'labels' => array(
                 'tabs_images' => array(
                     'tab' => 'EXT:l10nmgr/Resources/Public/Icons/module1_icon.gif',
@@ -54,10 +54,10 @@ if (TYPO3_MODE == "BE") {
     /**
      * Registers a Backend Module
      */
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule('xMOD', 'Module2List', '', '', array(
-            'routeTarget' => \Localizationteam\L10nmgr\Modules\Module2List::class . '::main',
+    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule('txl10nmgrM1', 'Module2List', '', '', array(
+            'routeTarget' => \Localizationteam\L10nmgr\Controller\TranslationTasks::class . '::mainAction',
             'access' => 'user,group',
-            'name' => 'xMOD_Module2List',
+            'name' => 'txl10nmgrM1_Module2List',
             'labels' => array(
                 'tabs_images' => array(
                     'tab' => 'EXT:l10nmgr/Resources/Public/Icons/module1_icon.gif',

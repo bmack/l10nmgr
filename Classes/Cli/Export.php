@@ -255,7 +255,7 @@ class Export extends CommandLineController
             }
             $hidden = isset($this->cli_args['--hidden']) ? $this->cli_args['--hidden'][0] : 'FALSE';
             if ($hidden === 'TRUE') {
-                $GLOBALS['BE_USER']->uc['moduleData']['xMOD_tx_l10nmgr_cm1']['noHidden'] = true;
+                $GLOBALS['BE_USER']->uc['moduleData']['tx_l10_nmgr_M1_tx_l10nmgr_cm1']['noHidden'] = true;
                 $l10nmgrGetXML->setModeNoHidden();
             }
 
@@ -451,7 +451,7 @@ class Export extends CommandLineController
             }
             $hidden = isset($this->cli_args['--hidden']) ? $this->cli_args['--hidden'][0] : 'FALSE';
             if ($hidden === 'TRUE') {
-                $GLOBALS['BE_USER']->uc['moduleData']['xMOD_tx_l10nmgr_cm1']['noHidden'] = true;
+                $GLOBALS['BE_USER']->uc['moduleData']['tx_l10nmgr_M1_tx_l10nmgr_cm1']['noHidden'] = true;
                 $l10nmgrGetXML->setModeNoHidden();
             }
 

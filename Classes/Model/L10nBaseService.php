@@ -183,8 +183,6 @@ class L10nBaseService
                                         unset($inputArray[$table][$elementUid][$key]);
                                         continue;
                                     }
-                                    #\TYPO3\CMS\Core\Utility\DebugUtility::debug($elementUid);
-
                                     // If FlexForm, we set value in special way:
                                     if ($Tpath) {
                                         if (!is_array($TCEmain_data[$Ttable][$elementUid][$Tfield])) {
@@ -222,9 +220,6 @@ class L10nBaseService
                 $TCEmain_data['pages'] = $TCEmain_data['pages_language_overlay'];
                 unset($TCEmain_data['pages_language_overlay']);
             }
-            #\TYPO3\CMS\Core\Utility\DebugUtility::debug($TCEmain_data);
-            //var_dump($TCEmain_data);
-
             $this->lastTCEMAINCommandsCount = 0;
 
             // Now, submitting translation data:

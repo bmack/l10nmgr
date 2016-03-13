@@ -127,8 +127,6 @@ abstract class AbstractExportView
                 }
             }
         }
-
-        #\TYPO3\CMS\Core\Utility\DebugUtility::debug();
         return $res;
     }
 

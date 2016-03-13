@@ -1,5 +1,5 @@
 <?php
-namespace Localizationteam\L10nmgr\Controller\Cm1;
+namespace Localizationteam\L10nmgr\Controller;
 
 /***************************************************************
  *  Copyright notice
@@ -33,7 +33,7 @@ use TYPO3\CMS\Backend\Configuration\TranslationConfigurationProvider;
 use TYPO3\CMS\Backend\Module\BaseScriptClass;
 use TYPO3\CMS\Backend\Template\DocumentTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Backend\Utility\IconUtility;
+use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Mail\MailMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Utility\DiffUtility;
@@ -85,6 +85,20 @@ class Cm1 extends BaseScriptClass
      * @var array Extension configuration
      */
     protected $lConf = array();
+    /**
+     * @var IconFactory
+     */
+    protected $iconFactory;
+
+    /**
+     * main action to be registered in ext_tables.php
+     */
+    public function mainAction()
+    {
+        $this->init();
+        $this->main();
+        $this->printContent();
+    }
 
     /**
      * Initializes the Module
@@ -93,7 +107,7 @@ class Cm1 extends BaseScriptClass
      */
     public function init()
     {
-        $this->MCONF['name'] = 'xMOD_txl10nmgrCM1';
+        $this->MCONF['name'] = 'txl10nmgrM1_txl10nmgrCM1';
         $GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
         $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/Cm1/locallang.xlf");
         parent::init();
@@ -158,12 +172,13 @@ class Cm1 extends BaseScriptClass
     {
         // Get language to export/import
         $this->sysLanguage = $this->MOD_SETTINGS["lang"];
+        $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
 
         // Draw the header.
         $this->doc = GeneralUtility::makeInstance(DocumentTemplate::class);
         $this->doc->backPath = $GLOBALS['BACK_PATH'];
         $this->doc->setModuleTemplate('EXT:l10nmgr/Resources/Private/Templates/Cm1Template.html');
-        $this->doc->form = '<form action="" method="post" enctype="' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['form_enctype'] . '">';
+        $this->doc->form = '<form action="" method="post" enctype="multipart/form-data">';
 
         // JavaScript
         $this->doc->JScode = '
@@ -201,16 +216,25 @@ class Cm1 extends BaseScriptClass
                 $this->content .= $this->doc->section('', $l10nmgrconfigurationView->render());
 
                 $this->content .= $this->doc->divider(15);
-                $this->content .= $this->doc->section($GLOBALS['LANG']->getLL('general.export.choose.action.title'),
-                    BackendUtility::getFuncMenu($l10ncfgObj->getId(), "SET[lang]", $this->sysLanguage,
-                        $this->MOD_MENU["lang"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . BackendUtility::getFuncMenu($l10ncfgObj->getId(),
+                $this->content .= $this->doc->section(
+                    $GLOBALS['LANG']->getLL('general.export.choose.action.title'),
+
+                    BackendUtility::getFuncMenu($l10ncfgObj->getId(),
+                        "SET[lang]", $this->sysLanguage, $this->MOD_MENU["lang"], '',
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) .
+
+                    BackendUtility::getFuncMenu($l10ncfgObj->getId(),
                         "SET[action]", $this->MOD_SETTINGS["action"], $this->MOD_MENU["action"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . BackendUtility::getFuncCheck($l10ncfgObj->getId(),
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) .
+
+                    BackendUtility::getFuncCheck($l10ncfgObj->getId(),
                         "SET[onlyChangedContent]", $this->MOD_SETTINGS["onlyChangedContent"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . ' ' . $GLOBALS['LANG']->getLL('export.xml.new.title') . BackendUtility::getFuncCheck($l10ncfgObj->getId(),
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . ' ' . $GLOBALS['LANG']->getLL('export.xml.new.title') .
+
+                    BackendUtility::getFuncCheck($l10ncfgObj->getId(),
                         "SET[noHidden]", $this->MOD_SETTINGS["noHidden"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . ' ' . $GLOBALS['LANG']->getLL('export.xml.noHidden.title') . '</br>');
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . ' ' . $GLOBALS['LANG']->getLL('export.xml.noHidden.title')
+                    . '</br>');
 
                 // Render content:
                 if (!count($this->MOD_MENU['lang'])) {
@@ -771,7 +795,7 @@ class Cm1 extends BaseScriptClass
         $buttons = array();
 
         $buttons['reload'] = '<a href="' . $GLOBALS['MCONF']['_'] . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:labels.reload',
-                true) . '">' . IconUtility::getSpriteIcon('actions-system-refresh', array()) . '</a>';
+                true) . '">' . $this->iconFactory->getIcon('actions-system-refresh') . '</a>';
 
         // Shortcut
         if ($GLOBALS['BE_USER']->mayMakeShortcut()) {
@@ -825,11 +849,4 @@ class Cm1 extends BaseScriptClass
     }
 }
 
-// Make instance:
-/** @var $SOBE Cm1 */
-$SOBE = GeneralUtility::makeInstance(Cm1::class);
-$SOBE->init();
-
-$SOBE->main();
-$SOBE->printContent();
 ?>

@@ -1,5 +1,5 @@
 <?php
-namespace Localizationteam\L10nmgr\Controller\Cm2;
+namespace Localizationteam\L10nmgr\Controller;
 
 /***************************************************************
  *  Copyright notice
@@ -52,8 +52,18 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * @package    TYPO3
  * @subpackage tx_l10nmgr
  */
-class Cm2 extends \TYPO3\CMS\Backend\Module\BaseScriptClass
+class Cm2 extends BaseScriptClass
 {
+
+    /**
+     * main action to be registered in ext_tables.php
+     */
+    public function mainAction()
+    {
+        $this->init();
+        $this->main();
+        $this->printContent();
+    }
 
     /**
      * Adds items to the ->MOD_MENU array. Used for the function menu selector.
@@ -79,7 +89,7 @@ class Cm2 extends \TYPO3\CMS\Backend\Module\BaseScriptClass
         // Draw the header.
         $this->doc = GeneralUtility::makeInstance(DocumentTemplate::class);
         $this->doc->backPath = $BACK_PATH;
-        $this->doc->form = '<form action="" method="post" enctype="' . $TYPO3_CONF_VARS['SYS']['form_enctype'] . '">';
+        $this->doc->form = '<form action="" method="post" enctype="multipart/form-data">';
 
         // JavaScript
         $this->doc->JScode = '
@@ -272,10 +282,4 @@ class Cm2 extends \TYPO3\CMS\Backend\Module\BaseScriptClass
         echo $this->content;
     }
 }
-
-// Make instance:
-$SOBE = GeneralUtility::makeInstance(Cm2::class);
-$SOBE->init();
-$SOBE->main();
-$SOBE->printContent();
 ?>

@@ -21,7 +21,8 @@ namespace Localizationteam\L10nmgr\Model;
 
 use TYPO3\CMS\Backend\Tree\View\PageTreeView;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Backend\Utility\IconUtility;
+use TYPO3\CMS\Core\Imaging\Icon;
+use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -104,7 +105,7 @@ class L10nConfiguration
         // Showing the tree:
         // Initialize starting point of page tree:
         $treeStartingPoint = $l10ncfg['depth'] == -1 ? (int)GeneralUtility::_GET('srcPID') : (int)$l10ncfg['pid'];
-        if ($treeStartingRecord > 0) {
+        if ($treeStartingPoint > 0) {
             $treeStartingRecord = BackendUtility::getRecordWSOL('pages', $treeStartingPoint);
         }
         $depth = $l10ncfg['depth'];
@@ -115,8 +116,8 @@ class L10nConfiguration
         $tree->init('AND ' . $GLOBALS['BE_USER']->getPagePermsClause(1));
         $tree->addField('l18n_cfg');
 
-        // Creating top icon; the current page
-        $HTML = IconUtility::getSpriteIconForRecord('pages', $treeStartingRecord);
+        $iconFactory = GeneralUtility::makeInstance(IconFactory::class);
+        $HTML = $iconFactory->getIconForRecord('pages', $treeStartingRecord, Icon::SIZE_SMALL)->render();
         $tree->tree[] = array(
             'row' => $treeStartingRecord,
             'HTML' => $HTML

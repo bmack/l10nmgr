@@ -1,5 +1,5 @@
 <?php
-namespace Localizationteam\L10nmgr\Modules\Module2List;
+namespace Localizationteam\L10nmgr\Controller;
 
 /***************************************************************
  *  Copyright notice
@@ -33,14 +33,24 @@ use TYPO3\CMS\Backend\Utility\IconUtility;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class Module2List extends BaseScriptClass
+class TranslationTasks extends BaseScriptClass
 {
 
     var $pageinfo;
 
+    /**
+     * main action to be registered in ext_tables.php
+     */
+    public function mainAction()
+    {
+        $this->init();
+        $this->main();
+        $this->printContent();
+    }
+
     function init()
     {
-        $this->MCONF['name'] = 'xMOD_Module2List';
+        $this->MCONF['name'] = 'txl10nmgrM1_Module2List';
         $GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
         $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/Module2/locallang.xlf");
         parent::init();
@@ -241,12 +251,4 @@ class Module2List extends BaseScriptClass
         echo $this->content;
     }
 }
-
-// Make instance:
-$SOBE = GeneralUtility::makeInstance(Module2List::class);
-$SOBE->init();
-
-$SOBE->main();
-$SOBE->printContent();
-
 ?>
