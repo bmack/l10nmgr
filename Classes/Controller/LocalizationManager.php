@@ -225,7 +225,7 @@ class LocalizationManager extends BaseScriptClass
             }
             '
         );
-        $this->moduleTemplate->form = '<form action="" method="post" enctype="multipart/form-data">';
+        $this->moduleTemplate->setForm('<form action="" method="post" enctype="multipart/form-data">');
 
         // Find l10n configuration record
         /** @var $l10ncfgObj L10nConfiguration */
@@ -412,9 +412,9 @@ class LocalizationManager extends BaseScriptClass
                 <label>' . $GLOBALS['LANG']->getLL('general.action.import.upload.title') . '</label><br />' .
                         '<input type="file" size="60" name="uploaded_import_file" />' .
                 '<br /></div><div class="form-section">' .
-                    '<input class="btn btn-default" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /> ' .
-                    '<input class="btn btn-default" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.export.xml.button.title') . '" name="export_excel" /> ' .
-                    '<input class="btn btn-default" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.import.xml.button.title') . '" name="import_excel" />
+                    '<input class="btn btn-default col-md-2 btn-info" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /> ' .
+                    '<input class="btn btn-default col-md-5 btn-success" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.export.xml.button.title') . '" name="export_excel" /> ' .
+                    '<input class="btn btn-default col-md-5 btn-warning" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.import.xml.button.title') . '" name="import_excel" />
                 <br /><br /></div></div>';
 
         // Read uploaded file:
@@ -523,79 +523,32 @@ class LocalizationManager extends BaseScriptClass
 
     function catXMLExportImportAction($l10ncfgObj)
     {
-        global $LANG, $BACK_PATH, $BE_USER;
-        $allowedSettingFiles = array(
-            'across' => 'acrossL10nmgrConfig.dst',
-            'dejaVu' => 'dejaVuL10nmgrConfig.dvflt',
-            'memoq' => 'memoQ.mqres',
-            'memoq2013-2014' => 'XMLConverter_TYPO3_l10nmgr_v3.6.mqres',
-            'transit' => 'StarTransit_XML_UTF_TYPO3.FFD',
-            'sdltrados2007' => 'SDLTradosTagEditor.ini',
-            'sdltrados2009' => 'TYPO3_l10nmgr.sdlfiletype',
-            'sdltrados2011-2014' => 'TYPO3_ConfigurationManager_v3.6.free.sdlftsettings',
-            'sdlpassolo' => 'SDLPassolo.xfg',
-        );
+        global $BE_USER;
 
         /** @var $service L10nBaseService */
         $service = GeneralUtility::makeInstance(L10nBaseService::class);
 
-        $info = '<br/>';
-        $info .= '<input type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /><br /><br/>';
+        $menuItems = array(
+            '0' => array(
+                'label' => $GLOBALS['LANG']->getLL('export.xml.headline.title'),
+                'content' => $this->getTabContentXmlExport()
+            ),
+            '1' => array(
+                'label' => $GLOBALS['LANG']->getLL('import.xml.headline.title'),
+                'content' => $this->getTabContentXmlImport()
+            ),
+            '2' => array(
+                'label' => $GLOBALS['LANG']->getLL('file.settings.downloads.title'),
+                'content' => $this->getTabContentXmlDownloads()
+            ),
+            '3' => array(
+                'label' => $GLOBALS['LANG']->getLL('l10nmgr.documentation.title'),
+                'content' => '<a class="btn btn-default btn-block btn-success" href="/' . ExtensionManagementUtility::siteRelPath('l10nmgr') . 'Documentation/manual.sxw" target="_new">Download</a>'
+            )
+        );
 
-        $menuItems = array();
+        $info = $this->moduleTemplate->getDynamicTabMenu($menuItems, 'ddtabs');
 
-        $info .= $this->moduleTemplate->getDynamicTabMenu($menuItems, 'ddtabs');
-
-        $info .= '<div id="ddtabs" class="basictab" style="border:0px solid gray;margin:0px;">
-					<ul style="border:0px solid #999999; ">
-					<li><a onClick="expandcontent(\'sc1\', this)" style="margin:0px;">' . $GLOBALS['LANG']->getLL('export.xml.headline.title') . '</a></li>
-					<li><a onClick="expandcontent(\'sc2\', this)" style="margin:0px;">' . $GLOBALS['LANG']->getLL('import.xml.headline.title') . '</a></li>
-					<li><a onClick="expandcontent(\'sc3\', this)" style="margin:0px;">' . $GLOBALS['LANG']->getLL('file.settings.downloads.title') . '</a></li>
-					<li><a onClick="expandcontent(\'sc4\', this)" style="margin:0px;">' . $GLOBALS['LANG']->getLL('l10nmgr.documentation.title') . '</a></li>
-				</ul></div>';
-
-        $info .= '<div id="tabcontentcontainer" style="height:190px;border:1px solid gray;padding-right:5px;width:100%;">';
-
-        $info .= '<div id="sc1" class="tabcontent">';
-        //$info .= '<div id="sc1" class="tabcontent">';
-        $_selectOptions = array('0' => '-default-');
-        $_selectOptions = $_selectOptions + $this->MOD_MENU["lang"];
-        $info .= '<input type="checkbox" value="1" name="check_exports" /> ' . $GLOBALS['LANG']->getLL('export.xml.check_exports.title') . '<br />';
-        $info .= '<input type="checkbox" value="1" checked="checked" name="no_check_xml" /> ' . $GLOBALS['LANG']->getLL('export.xml.no_check_xml.title') . '<br />';
-        $info .= '<input type="checkbox" value="1" name="check_utf8" /> ' . $GLOBALS['LANG']->getLL('export.xml.checkUtf8.title') . '<br />';
-        $info .= $GLOBALS['LANG']->getLL('export.xml.source-language.title') . $this->_getSelectField("export_xml_forcepreviewlanguage",
-                '0', $_selectOptions) . '<br />';
-        // Add the option to send to FTP server, if FTP information is defined
-        if (!empty($this->lConf['ftp_server']) && !empty($this->lConf['ftp_server_username']) && !empty($this->lConf['ftp_server_password'])) {
-            $info .= '<input type="checkbox" value="1" name="ftp_upload" id="tx_l10nmgr_ftp_upload" /> <label for="tx_l10nmgr_ftp_upload">' . $GLOBALS['LANG']->getLL('export.xml.ftp.title') . '</label>';
-        }
-        $info .= '<br /><br/>';
-        $info .= '<input type="submit" value="Export" name="export_xml" /><br /><br /><br/>';
-        $info .= '</div>';
-        $info .= '<div id="sc2" class="tabcontent">';
-        $info .= '<input type="checkbox" value="1" name="make_preview_link" /> ' . $GLOBALS['LANG']->getLL('import.xml.make_preview_link.title') . '<br />';
-        $info .= '<input type="checkbox" value="1" name="import_delL10N" /> ' . $GLOBALS['LANG']->getLL('import.xml.delL10N.title') . '<br />';
-        $info .= '<input type="checkbox" value="1" name="import_asdefaultlanguage" /> ' . $GLOBALS['LANG']->getLL('import.xml.asdefaultlanguage.title') . '<br />';
-        $info .= '<br />';
-        $info .= '<input type="file" size="60" name="uploaded_import_file" /><br /><br /><input type="submit" value="Import" name="import_xml" /><br /><br /> ';
-        $info .= '</div>';
-        $info .= '<div id="sc3" class="tabcontent">';
-        $info .= $this->moduleTemplate->icons(1) . $GLOBALS['LANG']->getLL('file.settings.available.title');
-
-        for (reset($allowedSettingFiles); list($settingId, $settingFileName) = each($allowedSettingFiles);) {
-            $currentFile = GeneralUtility::resolveBackPath($BACK_PATH . \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('l10nmgr') . 'settings/' . $settingFileName);
-
-            if (is_file($currentFile) && is_readable($currentFile)) {
-
-                $size = GeneralUtility::formatSize((int)filesize($currentFile), ' Bytes| KB| MB| GB');
-                $info .= '<br/><a href="' . GeneralUtility::rawUrlEncodeFP($currentFile) . '" title="' . $GLOBALS['LANG']->getLL('file.settings.download.title') . '" target="_blank">' . $GLOBALS['LANG']->getLL('file.settings.' . $settingId . '.title') . ' (' . $size . ')' . '</a> ';
-            }
-        }
-        $info .= '</div>';
-        $info .= '<div id="sc4" class="tabcontent">';
-        $info .= '<a href="/' . \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::siteRelPath('l10nmgr') . 'doc/manual.sxw" target="_new">Download</a>';
-        $info .= '</div>';
-        $info .= '</div>';
 
         $actionInfo = '';
         // Read uploaded file:
@@ -732,6 +685,98 @@ class LocalizationManager extends BaseScriptClass
         // $info .= '</div>';
 
         return $info;
+    }
+
+    /**
+     * @return string
+     */
+    function getTabContentXmlExport() {
+        $_selectOptions = array('0' => '-default-');
+        $_selectOptions = $_selectOptions + $this->MOD_MENU["lang"];
+
+        $tabContentXmlExport = '<div class="form-section">' .
+                '<div class="form-group"><div class="checkbox"><label>' .
+                    '<input type="checkbox" value="1" name="check_exports" /> ' . $GLOBALS['LANG']->getLL('export.xml.check_exports.title') .
+                '</label></div></div><br />' .
+                '<div class="form-group"><div class="checkbox"><label>' .
+                    '<input type="checkbox" value="1" checked="checked" name="no_check_xml" /> ' . $GLOBALS['LANG']->getLL('export.xml.no_check_xml.title') .
+                '</label></div></div><br />' .
+                '<div class="form-group"><div class="checkbox"><label>' .
+                    '<input type="checkbox" value="1" name="check_utf8" /> ' . $GLOBALS['LANG']->getLL('export.xml.checkUtf8.title') .
+                '</label></div></div><br /><br />' .
+            '</div><div class="form-section">' .
+                '<div class="form-group">' .
+                '<label>' . $GLOBALS['LANG']->getLL('export.xml.source-language.title') . '</label><br />' .
+            $this->_getSelectField("export_xml_forcepreviewlanguage", '0', $_selectOptions) .
+            '<br /><br /></div></div>';
+
+        // Add the option to send to FTP server, if FTP information is defined
+        if (!empty($this->lConf['ftp_server']) && !empty($this->lConf['ftp_server_username']) && !empty($this->lConf['ftp_server_password'])) {
+            $tabContentXmlExport .= '<input type="checkbox" value="1" name="ftp_upload" id="tx_l10nmgr_ftp_upload" />
+                <label for="tx_l10nmgr_ftp_upload">' . $GLOBALS['LANG']->getLL('export.xml.ftp.title') . '</label>';
+        }
+
+        $tabContentXmlExport .= '<div class="form-section">' .
+            '<input class="btn btn-default btn-info col-md-4" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" />' .
+            '<input class="btn btn-default btn-success col-md-8" type="submit" value="Export" name="export_xml" /><br /><br /></div>';
+
+        return $tabContentXmlExport;
+    }
+
+    /**
+     * @return string
+     */
+    function getTabContentXmlImport() {
+        $tabContentXmlImport = '<div class="form-section">' .
+            '<div class="form-group"><div class="checkbox"><label>' .
+                '<input type="checkbox" value="1" name="make_preview_link" /> ' . $GLOBALS['LANG']->getLL('import.xml.make_preview_link.title') .
+            '</label></div></div><br />' .
+            '<div class="form-group"><div class="checkbox"><label>' .
+                '<input type="checkbox" value="1" name="import_delL10N" /> ' . $GLOBALS['LANG']->getLL('import.xml.delL10N.title') .
+            '</label></div></div><br />' .
+            '<div class="form-group"><div class="checkbox"><label>' .
+                '<input type="checkbox" value="1" name="import_asdefaultlanguage" /> ' . $GLOBALS['LANG']->getLL('import.xml.asdefaultlanguage.title') .
+            '</label></div></div></div>' .
+            '<div class="form-section">' .
+                '<input type="file" size="60" name="uploaded_import_file" /><br />' .
+            '</div><div class="form-section">' .
+                '<input class="btn btn-default btn-info col-md-4" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /> ' .
+                '<input class="btn btn-default btn-warning col-md-8" type="submit" value="Import" name="import_xml" /><br /><br /></div>';
+
+        return $tabContentXmlImport;
+    }
+
+    /**
+     * @return string
+     */
+    function getTabContentXmlDownloads() {
+        global $BACK_PATH;
+
+        $allowedSettingFiles = array(
+            'across' => 'acrossL10nmgrConfig.dst',
+            'dejaVu' => 'dejaVuL10nmgrConfig.dvflt',
+            'memoq' => 'memoQ.mqres',
+            'memoq2013-2014' => 'XMLConverter_TYPO3_l10nmgr_v3.6.mqres',
+            'transit' => 'StarTransit_XML_UTF_TYPO3.FFD',
+            'sdltrados2007' => 'SDLTradosTagEditor.ini',
+            'sdltrados2009' => 'TYPO3_l10nmgr.sdlfiletype',
+            'sdltrados2011-2014' => 'TYPO3_ConfigurationManager_v3.6.free.sdlftsettings',
+            'sdlpassolo' => 'SDLPassolo.xfg',
+        );
+
+        $tabContentXmlDownloads = $this->moduleTemplate->icons(1) . $GLOBALS['LANG']->getLL('file.settings.available.title');
+
+        for (reset($allowedSettingFiles); list($settingId, $settingFileName) = each($allowedSettingFiles);) {
+            $currentFile = GeneralUtility::resolveBackPath($BACK_PATH . ExtensionManagementUtility::extRelPath('l10nmgr') . 'settings/' . $settingFileName);
+
+            if (is_file($currentFile) && is_readable($currentFile)) {
+
+                $size = GeneralUtility::formatSize((int)filesize($currentFile), ' Bytes| KB| MB| GB');
+                $tabContentXmlDownloads .= '<br/><a href="' . GeneralUtility::rawUrlEncodeFP($currentFile) . '" title="' . $GLOBALS['LANG']->getLL('file.settings.download.title') . '" target="_blank">' . $GLOBALS['LANG']->getLL('file.settings.' . $settingId . '.title') . ' (' . $size . ')' . '</a> ';
+            }
+        }
+
+        return $tabContentXmlDownloads;
     }
 
     /**
