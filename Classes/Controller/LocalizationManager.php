@@ -716,9 +716,8 @@ class LocalizationManager extends BaseScriptClass
                 <label for="tx_l10nmgr_ftp_upload">' . $GLOBALS['LANG']->getLL('export.xml.ftp.title') . '</label>';
         }
 
-        $tabContentXmlExport .= '<div class="form-section">' .
-            '<input class="btn btn-default btn-info col-md-4" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" />' .
-            '<input class="btn btn-default btn-success col-md-8" type="submit" value="Export" name="export_xml" /><br /><br /></div>';
+        $tabContentXmlExport .= '<input class="btn btn-default btn-info col-md-4" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" />' .
+            '<input class="btn btn-default btn-success col-md-8" type="submit" value="Export" name="export_xml" />';
 
         return $tabContentXmlExport;
     }
@@ -736,12 +735,12 @@ class LocalizationManager extends BaseScriptClass
             '</label></div></div><br />' .
             '<div class="form-group"><div class="checkbox"><label>' .
                 '<input type="checkbox" value="1" name="import_asdefaultlanguage" /> ' . $GLOBALS['LANG']->getLL('import.xml.asdefaultlanguage.title') .
-            '</label></div></div></div>' .
+            '</label></div></div><br /><br /></div>' .
             '<div class="form-section">' .
                 '<input type="file" size="60" name="uploaded_import_file" /><br />' .
-            '</div><div class="form-section">' .
+            '</div>' .
                 '<input class="btn btn-default btn-info col-md-4" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /> ' .
-                '<input class="btn btn-default btn-warning col-md-8" type="submit" value="Import" name="import_xml" /><br /><br /></div>';
+                '<input class="btn btn-default btn-warning col-md-8" type="submit" value="Import" name="import_xml" />';
 
         return $tabContentXmlImport;
     }
