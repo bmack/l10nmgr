@@ -78,12 +78,12 @@ class Cm3 extends BaseScriptClass
         global $BE_USER, $LANG, $BACK_PATH, $TCA_DESCR, $TCA, $CLIENT, $TYPO3_CONF_VARS;
 
         // Draw the header.
-        $this->doc = GeneralUtility::makeInstance(DocumentTemplate::class);
-        $this->doc->backPath = $BACK_PATH;
-        $this->doc->form = '<form action="" method="post" enctype="multipart/form-data">';
+        $this->module = GeneralUtility::makeInstance(DocumentTemplate::class);
+        $this->module->backPath = $BACK_PATH;
+        $this->module->form = '<form action="" method="post" enctype="multipart/form-data">';
 
         // JavaScript
-        $this->doc->JScode = '
+        $this->module->JScode = '
 			<script language="javascript" type="text/javascript">
 				script_ended = 0;
 				function jumpToUrl(URL)	{
@@ -93,17 +93,17 @@ class Cm3 extends BaseScriptClass
 		';
 
         // Header:
-        $this->content .= $this->doc->startPage($LANG->getLL('title'));
-        $this->content .= $this->doc->header($LANG->getLL('title'));
+        $this->content .= $this->module->startPage($LANG->getLL('title'));
+        $this->content .= $this->module->header($LANG->getLL('title'));
 
-        $this->content .= $this->doc->divider(5);
+        $this->content .= $this->module->divider(5);
 
         // Render the module content (for all modes):
-        $this->content .= $this->doc->section('',
+        $this->content .= $this->module->section('',
             $this->moduleContent((string)GeneralUtility::_GP('table'), (int)GeneralUtility::_GP('id'),
                 GeneralUtility::_GP('cmd')));
 
-        $this->content .= $this->doc->spacer(10);
+        $this->content .= $this->module->spacer(10);
     }
 
     /**
@@ -166,7 +166,7 @@ class Cm3 extends BaseScriptClass
     function printContent()
     {
 
-        $this->content .= $this->doc->endPage();
+        $this->content .= $this->module->endPage();
         echo $this->content;
     }
 }

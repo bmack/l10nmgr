@@ -37,20 +37,20 @@ class L10nConfigurationDetailView
     var $l10ncfgObj; // Internal array (=datarow of config record)
 
     /**
-     * @var $doc
+     * @var $module
      */
-    var $doc = null;
+    var $module = null;
 
     /**
      * constructor. Set the internal required objects as parameter in constructor (kind of dependency injection, and communicate the dependencies)
      *
      * @param L10nConfiguration $l10ncfgObj
-     * @param DocumentTemplate $doc Reference to the calling template object
+     * @param DocumentTemplate $module Reference to the calling template object
      */
-    function __construct($l10ncfgObj, $doc)
+    function __construct($l10ncfgObj, $module)
     {
         $this->l10ncfgObj = $l10ncfgObj;
-        $this->doc = $doc;
+        $this->module = $module;
     }
 
     /**
@@ -87,7 +87,7 @@ class L10nConfigurationDetailView
 					</tr>
 				</table>';
 
-        $content .= $this->doc->section($LANG->getLL('general.export.configuration.title'), $configurationSettings);
+        $content .= $this->module->section($LANG->getLL('general.export.configuration.title'), $configurationSettings);
 
         return $content;
     }

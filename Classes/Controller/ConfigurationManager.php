@@ -24,8 +24,10 @@ namespace Localizationteam\L10nmgr\Controller;
      * @author  Kasper Skårhøj <kasperYYYY@typo3.com>
      */
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Module\BaseScriptClass;
-use TYPO3\CMS\Backend\Template\DocumentTemplate;
+use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
@@ -55,18 +57,68 @@ class ConfigurationManager extends BaseScriptClass
     protected $languageDetails = array();
 
     /**
-     * @var IconFactory
+     * ModuleTemplate Container
+     *
+     * @var ModuleTemplate
      */
-    protected $iconFactory = array();
+    protected $moduleTemplate;
 
     /**
-     * main action to be registered in ext_tables.php
+     * Document Template Object
+     *
+     * @var \TYPO3\CMS\Backend\Template\DocumentTemplate
      */
-    public function mainAction()
+    public $doc;
+
+    /**
+     * The name of the module
+     *
+     * @var string
+     */
+    protected $moduleName = 'web_ConfigurationManager';
+
+    /**
+     * @var IconFactory
+     */
+    protected $iconFactory;
+
+    /**
+     * Constructor
+     */
+    public function __construct()
     {
+        $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
+        $this->moduleTemplate = GeneralUtility::makeInstance(ModuleTemplate::class);
+        $this->getLanguageService()->includeLLFile('EXT:l10nmgr/Resources/Private/Language/Modules/ConfigurationManager/locallang.xlf');
+        $this->MCONF = array(
+            'name' => $this->moduleName,
+        );
+    }
+
+    /**
+     * Injects the request object for the current request or subrequest
+     * Then checks for module functions that have hooked in, and renders menu etc.
+     *
+     * @param ServerRequestInterface $request the current request
+     * @param ResponseInterface $response
+     * @return ResponseInterface the response with the content
+     */
+    public function mainAction(ServerRequestInterface $request, ResponseInterface $response)
+    {
+        $GLOBALS['SOBE'] = $this;
         $this->init();
+
+        // Checking for first level external objects
+        $this->checkExtObj();
+
+        // Checking second level external objects
+        $this->checkSubExtObj();
         $this->main();
-        $this->printContent();
+
+        $this->moduleTemplate->setContent($this->content);
+
+        $response->getBody()->write($this->moduleTemplate->renderContent());
+        return $response;
     }
 
     /**
@@ -76,10 +128,7 @@ class ConfigurationManager extends BaseScriptClass
      */
     public function init()
     {
-        $this->MCONF['name'] = 'web_ConfigurationManager';
-        $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
         $GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
-        $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/ConfigurationManager/locallang.xlf");
         parent::init();
     }
 
@@ -94,28 +143,17 @@ class ConfigurationManager extends BaseScriptClass
         $extRelPath = ExtensionManagementUtility::extRelPath('l10nmgr');
 
         // Get a template instance and load the template
-        $this->doc = GeneralUtility::makeInstance(DocumentTemplate::class);
-        $this->doc->backPath = $GLOBALS['BACK_PATH'];
+        $this->moduleTemplate->backPath = $GLOBALS['BACK_PATH'];
         // NOTE: this module uses the same template as the CM1 module
-        $this->doc->setModuleTemplate('EXT:l10nmgr/Resources/Private/Templates/LocalizationManagerTemplate.html');
-        $this->doc->form = '<form action="" method="POST">';
+        $this->moduleTemplate->form = '<form action="" method="POST">';
         // Load the styles and JavaScript for the tooltips
-        $this->doc->addStyleSheet('ConfigurationManager',
-            ExtensionManagementUtility::extRelPath('l10nmgr') . 'Resources/Public/Contrib/jquery.tooltip.css');
-        $this->doc->loadJavascriptLib($extRelPath . 'Resources/Public/Contrib/jquery-1.2.3.js');
-        $this->doc->loadJavascriptLib($extRelPath . 'Resources/Public/Contrib/jquery.tooltip.js');
-        $this->doc->loadJavascriptLib($extRelPath . 'Resources/Private/Templates/mod1_list.js');
+        $this->moduleTemplate->loadJavascriptLib($extRelPath . 'Resources/Public/Contrib/jquery-1.2.3.js');
+        $this->moduleTemplate->loadJavascriptLib($extRelPath . 'Resources/Public/Contrib/jquery.tooltip.js');
+        $this->moduleTemplate->loadJavascriptLib($extRelPath . 'Resources/Private/Templates/mod1_list.js');
 
         // Get the actual content
         $this->content = $this->moduleContent();
-        $markers['CONTENT'] = $this->content;
 
-        // Build the <body> for the module
-        $docHeaderButtons = $this->getButtons();
-        $this->content = $this->doc->startPage($GLOBALS['LANG']->getLL('general.title'));
-        $this->content .= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
-        $this->content .= $this->doc->endPage();
-        $this->content = $this->doc->insertStylesAndJS($this->content);
     }
 
     /**
@@ -126,16 +164,16 @@ class ConfigurationManager extends BaseScriptClass
     protected function moduleContent()
     {
         $content = '';
-        $content .= $this->doc->header($GLOBALS['LANG']->getLL('general.title'));
+        $content .= $this->moduleTemplate->header($GLOBALS['LANG']->getLL('general.title'));
         // Get the available configurations
         $l10nConfigurations = $this->getAllConfigurations();
         // No configurations, issue a simple message
         if (count($l10nConfigurations) == 0) {
-            $content .= $this->doc->section('', nl2br($GLOBALS['LANG']->getLL('general.no_date')));
+            $content .= $this->moduleTemplate->section('', nl2br($GLOBALS['LANG']->getLL('general.no_date')));
             // List all configurations
         } else {
-            $content .= $this->doc->section('', nl2br($GLOBALS['LANG']->getLL('general.description.message')));
-            $content .= $this->doc->section($GLOBALS['LANG']->getLL('general.list.configuration.title'), '');
+            $content .= $this->moduleTemplate->section($GLOBALS['LANG']->getLL('general.list.configuration.manager'), nl2br($GLOBALS['LANG']->getLL('general.description.message')), false, true);
+            $content .= $this->moduleTemplate->section($GLOBALS['LANG']->getLL('general.list.configuration.title'), '');
             $content .= '<div class="table-fit"><table class="table table-striped table-hover">';
             // Assemble the header row
             $content .= '<thead>';
@@ -286,7 +324,7 @@ class ConfigurationManager extends BaseScriptClass
 
         // Shortcut
         if ($GLOBALS['BE_USER']->mayMakeShortcut()) {
-            $buttons['shortcut'] = $this->doc->makeShortcutIcon('', 'function', $this->MCONF['name']);
+            $buttons['shortcut'] = $this->moduleTemplate->makeShortcutIcon('', 'function', $this->MCONF['name']);
         }
 
         return $buttons;

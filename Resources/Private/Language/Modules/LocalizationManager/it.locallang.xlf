@@ -49,7 +49,7 @@
 				questa lingua!
 			</target>
 			</trans-unit>
-			<trans-unit id="general.title" xml:space="preserve" approved="yes">
+			<trans-unit id="export.import.title" xml:space="preserve" approved="yes">
 				<source>L10N Export/Import</source>
 				<target>L10N Esportazione/Importazione</target>
 			</trans-unit>

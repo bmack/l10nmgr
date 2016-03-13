@@ -46,8 +46,8 @@ class L10nHtmlListView extends AbstractExportView
     function __construct($l10ncfgObj, $sysLang)
     {
         global $BACK_PATH;
-        $this->doc = GeneralUtility::makeInstance(DocumentTemplate::class);
-        $this->doc->backPath = $BACK_PATH;
+        $this->module = GeneralUtility::makeInstance(DocumentTemplate::class);
+        $this->module->backPath = $BACK_PATH;
         parent::__construct($l10ncfgObj, $sysLang);
     }
 
@@ -159,9 +159,9 @@ class L10nHtmlListView extends AbstractExportView
                                 if (substr($uidString, 0, 3) !== 'NEW') {
                                     $editId = is_array($data['translationInfo']['translations'][$sysLang]) ? $data['translationInfo']['translations'][$sysLang]['uid'] : $data['translationInfo']['uid'];
                                     $editLink = ' - <a href="#" onclick="' . htmlspecialchars(BackendUtility::editOnClick('&edit[' . $data['translationInfo']['translation_table'] . '][' . $editId . ']=edit',
-                                            $this->doc->backPath)) . '"><em>[' . $LANG->getLL('render_overview.clickedit.message') . ']</em></a>';
+                                            $this->module->backPath)) . '"><em>[' . $LANG->getLL('render_overview.clickedit.message') . ']</em></a>';
                                 } else {
-                                    $editLink = ' - <a href="' . htmlspecialchars($this->doc->issueCommand('&cmd[' . $table . '][' . $data['translationInfo']['uid'] . '][localize]=' . $sysLang)) . '"><em>[' . $LANG->getLL('render_overview.clicklocalize.message') . ']</em></a>';
+                                    $editLink = ' - <a href="' . htmlspecialchars($this->module->issueCommand('&cmd[' . $table . '][' . $data['translationInfo']['uid'] . '][localize]=' . $sysLang)) . '"><em>[' . $LANG->getLL('render_overview.clicklocalize.message') . ']</em></a>';
                                 }
                             } else {
                                 $editLink = '';

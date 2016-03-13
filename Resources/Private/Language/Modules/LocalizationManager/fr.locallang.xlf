@@ -48,7 +48,7 @@
 				<target>ERREUR: Utilisateur n'a pas d'accès pour éditer cette langue!
 			</target>
 			</trans-unit>
-			<trans-unit id="general.title" xml:space="preserve" approved="yes">
+			<trans-unit id="export.import.title" xml:space="preserve" approved="yes">
 				<source>L10N Export/Import</source>
 				<target>L10N Exportation/Importation</target>
 			</trans-unit>

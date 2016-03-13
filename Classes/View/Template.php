@@ -77,7 +77,7 @@ class Template
      */
     function getDocument()
     {
-        return $this->document;
+        return $this->moduleument;
     }
 
     /**
@@ -90,7 +90,7 @@ class Template
      */
     function setDocument($document)
     {
-        $this->document = (is_object($document)) ? $document : null;
+        $this->moduleument = (is_object($document)) ? $document : null;
     }
 
     /**

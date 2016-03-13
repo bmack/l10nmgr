@@ -29,14 +29,20 @@ use Localizationteam\L10nmgr\View\CatXmlView;
 use Localizationteam\L10nmgr\View\ExcelXmlView;
 use Localizationteam\L10nmgr\View\L10nConfigurationDetailView;
 use Localizationteam\L10nmgr\View\L10nHtmlListView;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Configuration\TranslationConfigurationProvider;
 use TYPO3\CMS\Backend\Module\BaseScriptClass;
-use TYPO3\CMS\Backend\Template\DocumentTemplate;
+use TYPO3\CMS\Backend\Routing\Router;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
+use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Mail\MailMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Utility\DebugUtility;
 use TYPO3\CMS\Core\Utility\DiffUtility;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 
@@ -71,19 +77,72 @@ class LocalizationManager extends BaseScriptClass
      * @var array Extension configuration
      */
     protected $lConf = array();
+
+    /**
+     * ModuleTemplate Container
+     *
+     * @var ModuleTemplate
+     */
+    protected $moduleTemplate;
+
+    /**
+     * Document Template Object
+     *
+     * @var \TYPO3\CMS\Backend\Template\DocumentTemplate
+     */
+    public $doc;
+
+    /**
+     * The name of the module
+     *
+     * @var string
+     */
+    protected $moduleName = 'ConfigurationManager_LocalizationManager';
+
     /**
      * @var IconFactory
      */
     protected $iconFactory;
 
+
     /**
-     * main action to be registered in ext_tables.php
+     * Constructor
      */
-    public function mainAction()
+    public function __construct()
     {
+        $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
+        $this->moduleTemplate = GeneralUtility::makeInstance(ModuleTemplate::class);
+        $this->moduleTemplate->getPageRenderer()->addCssFile(ExtensionManagementUtility::extRelPath('l10nmgr'). 'Resources/Public/Css/l10nmgr.css');
+        $this->getLanguageService()->includeLLFile('EXT:l10nmgr/Resources/Private/Language/Modules/LocalizationManager/locallang.xlf');
+        $this->MCONF = array(
+            'name' => $this->moduleName,
+        );
+    }
+
+    /**
+     * Injects the request object for the current request or subrequest
+     * Then checks for module functions that have hooked in, and renders menu etc.
+     *
+     * @param ServerRequestInterface $request the current request
+     * @param ResponseInterface $response
+     * @return ResponseInterface the response with the content
+     */
+    public function mainAction(ServerRequestInterface $request, ResponseInterface $response)
+    {
+        $GLOBALS['SOBE'] = $this;
         $this->init();
+
+        // Checking for first level external objects
+        $this->checkExtObj();
+
+        // Checking second level external objects
+        $this->checkSubExtObj();
         $this->main();
-        $this->printContent();
+
+        $this->moduleTemplate->setContent($this->content);
+
+        $response->getBody()->write($this->moduleTemplate->renderContent());
+        return $response;
     }
 
     /**
@@ -93,9 +152,7 @@ class LocalizationManager extends BaseScriptClass
      */
     public function init()
     {
-        $this->MCONF['name'] = 'ConfigurationManager_LocalizationManager';
         $GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
-        $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/LocalizationManager/locallang.xlf");
         parent::init();
     }
 
@@ -158,24 +215,18 @@ class LocalizationManager extends BaseScriptClass
     {
         // Get language to export/import
         $this->sysLanguage = $this->MOD_SETTINGS["lang"];
-        $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
 
         // Draw the header.
-        $this->doc = GeneralUtility::makeInstance(DocumentTemplate::class);
-        $this->doc->backPath = $GLOBALS['BACK_PATH'];
-        $this->doc->setModuleTemplate('EXT:l10nmgr/Resources/Private/Templates/LocalizationManagerTemplate.html');
-        $this->doc->form = '<form action="" method="post" enctype="multipart/form-data">';
-
-        // JavaScript
-        $this->doc->JScode = '
-			<script language="javascript" type="text/javascript">
-				script_ended = 0;
-				function jumpToUrl(URL)	{
-					document.location = URL;
-				}
-			</script>
-			<script language="javascript" type="text/javascript" src="' . GeneralUtility::resolveBackPath($GLOBALS['BACK_PATH'] . \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('l10nmgr') . 'Resources/Public/Contrib/tabs.js') . '"></script>
-			<link rel="stylesheet" type="text/css" href="' . GeneralUtility::resolveBackPath($GLOBALS['BACK_PATH'] . \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('l10nmgr') . 'Resources/Public/Contrib/tabs.css') . '" />';
+        $this->moduleTemplate->addJavaScriptCode(
+            'jumpToUrl',
+            '
+            function jumpToUrl(URL) {
+                window.location.href = URL;
+                return false;
+            }
+            '
+        );
+        $this->moduleTemplate->form = '<form action="" method="post" enctype="multipart/form-data">';
 
         // Find l10n configuration record
         /** @var $l10ncfgObj L10nConfiguration */
@@ -192,56 +243,61 @@ class LocalizationManager extends BaseScriptClass
             if ($this->id && $access) {
 
                 // Header:
-                //				$this->content.=$this->doc->startPage($GLOBALS['LANG']->getLL('general.title'));
-                //				$this->content.=$this->doc->header($GLOBALS['LANG']->getLL('general.title'));
+                //				$this->content.=$this->moduleTemplate->startPage($GLOBALS['LANG']->getLL('general.title'));
+                $this->content.=$this->moduleTemplate->header($GLOBALS['LANG']->getLL('general.title'));
 
                 // Create and render view to show details for the current l10nmgrcfg
                 /** @var $l10nmgrconfigurationView L10nConfigurationDetailView */
                 $l10nmgrconfigurationView = GeneralUtility::makeInstance(L10nConfigurationDetailView::class,
-                    $l10ncfgObj, $this->doc);
-                $this->content .= $this->doc->section('', $l10nmgrconfigurationView->render());
+                    $l10ncfgObj, $this->moduleTemplate);
+                $this->content .= $this->moduleTemplate->section($GLOBALS['LANG']->getLL('general.manager'), $l10nmgrconfigurationView->render(), false, true);
 
-                $this->content .= $this->doc->divider(15);
-                $this->content .= $this->doc->section(
-                    $GLOBALS['LANG']->getLL('general.export.choose.action.title'),
-
-                    BackendUtility::getFuncMenu($l10ncfgObj->getId(),
-                        "SET[lang]", $this->sysLanguage, $this->MOD_MENU["lang"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) .
-
-                    BackendUtility::getFuncMenu($l10ncfgObj->getId(),
+                $this->content .= $this->moduleTemplate->divider(15);
+                $title = $this->MOD_MENU["action"][$this->MOD_SETTINGS["action"]];
+                $this->content .= $this->moduleTemplate->section(
+                    $title,
+                    '<div class="col-md-4">
+                    <div class="form-inline form-inline-spaced">
+                    <div class="form-section">' .
+                    $this->getFuncMenu($l10ncfgObj->getId(),
                         "SET[action]", $this->MOD_SETTINGS["action"], $this->MOD_MENU["action"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) .
-
-                    BackendUtility::getFuncCheck($l10ncfgObj->getId(),
-                        "SET[onlyChangedContent]", $this->MOD_SETTINGS["onlyChangedContent"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . ' ' . $GLOBALS['LANG']->getLL('export.xml.new.title') .
-
-                    BackendUtility::getFuncCheck($l10ncfgObj->getId(),
-                        "SET[noHidden]", $this->MOD_SETTINGS["noHidden"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID'))) . ' ' . $GLOBALS['LANG']->getLL('export.xml.noHidden.title')
-                    . '</br>');
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')),
+                        $GLOBALS['LANG']->getLL('general.export.choose.action.title')) .
+                    '<br />' .
+                    $this->getFuncMenu($l10ncfgObj->getId(),
+                        "SET[lang]", $this->sysLanguage, $this->MOD_MENU["lang"], '',
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')),
+                        $GLOBALS['LANG']->getLL('export.overview.targetlanguage.label')) .
+                    '<br /><br /></div><div class="form-section">' .
+                    $this->getFuncCheck(
+                        $l10ncfgObj->getId(),
+                        "SET[onlyChangedContent]",
+                        $this->MOD_SETTINGS["onlyChangedContent"],
+                        '',
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')),
+                        '',
+                        $GLOBALS['LANG']->getLL('export.xml.new.title')
+                    ) .  '<br />' .
+                    $this->getFuncCheck(
+                        $l10ncfgObj->getId(),
+                        "SET[noHidden]",
+                        $this->MOD_SETTINGS["noHidden"],
+                        '',
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')),
+                        '',
+                        $GLOBALS['LANG']->getLL('export.xml.noHidden.title')
+                    ) .
+                    '<br /><br ></div></div></div>');
 
                 // Render content:
                 if (!count($this->MOD_MENU['lang'])) {
-                    $this->content .= $this->doc->section('ERROR',
+                    $this->content .= $this->moduleTemplate->section('ERROR',
                         $GLOBALS['LANG']->getLL('general.access.error.title'));
                 } else {
                     $this->moduleContent($l10ncfgObj);
                 }
             }
         }
-
-        $this->content .= $this->doc->spacer(10);
-
-        $markers['CONTENT'] = $this->content;
-
-        // Build the <body> for the module
-        $docHeaderButtons = $this->getButtons();
-        $this->content = $this->doc->startPage($GLOBALS['LANG']->getLL('general.title'));
-        $this->content .= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
-        $this->content .= $this->doc->endPage();
-        $this->content = $this->doc->insertStylesAndJS($this->content);
     }
 
     /**
@@ -280,7 +336,7 @@ class LocalizationManager extends BaseScriptClass
                 if ($this->MOD_SETTINGS["action"] == 'link') {
                     $htmlListView->setModeShowEditLinks();
                 }
-                $subcontent .= $htmlListView->renderOverview();
+                $subcontent .= '</div></div><div class="col-md-12">' . $htmlListView->renderOverview();
                 break;
 
             case 'export_excel':
@@ -302,7 +358,9 @@ class LocalizationManager extends BaseScriptClass
                 break;
         } //switch block
 
-        $this->content .= $this->doc->section($subheader, $subcontent);
+        $this->content .= $this->moduleTemplate->section($subheader,
+            '<div class="col-md-4"><div class="form-inline form-inline-spaced">' . $subcontent . '</div></div>'
+        );
     }
 
     function inlineEditAction($l10ncfgObj)
@@ -341,15 +399,27 @@ class LocalizationManager extends BaseScriptClass
         // Buttons:
         $_selectOptions = array('0' => '-default-');
         $_selectOptions = $_selectOptions + $this->MOD_MENU["lang"];
-        $info = '<br /><br />';
-        $info .= '<input type="checkbox" value="1" checked="checked" name="check_exports" /> ' . $GLOBALS['LANG']->getLL('export.xml.check_exports.title') . '<br />';
-        $info .= '<input type="checkbox" value="1" name="import_asdefaultlanguage" /> ' . $GLOBALS['LANG']->getLL('import.xml.asdefaultlanguage.title') . '<br />';
-        $info .= $GLOBALS['LANG']->getLL('export.xml.source-language.title') . $this->_getSelectField("export_xml_forcepreviewlanguage",
-                '0', $_selectOptions) . '<br /><br />';
-        $info .= '<input type="file" size="60" name="uploaded_import_file" /><br /><br />';
-        $info .= '<input type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" />';
-        $info .= '<input type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.export.xml.button.title') . '" name="export_excel" />';
-        $info .= '<input type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.import.xml.button.title') . '" name="import_excel" />';
+        $info = '<div class="form-section">' .
+                    '<div class="form-group"><div class="checkbox"><label>' .
+                        '<input type="checkbox" value="1" checked="checked" name="check_exports" /> ' . $GLOBALS['LANG']->getLL('export.xml.check_exports.title') . '<br />' .
+                    '</label></div></div><br />' .
+                    '<div class="form-group"><div class="checkbox"><label>' .
+                        '<input type="checkbox" value="1" name="import_asdefaultlanguage" /> ' . $GLOBALS['LANG']->getLL('import.xml.asdefaultlanguage.title') .
+                    '</label></div></div><br /><br />' .
+                '</div><div class="form-section"><div class="form-group">
+                    <label>' . $GLOBALS['LANG']->getLL('export.xml.source-language.title') . '</label><br />' .
+                    $this->_getSelectField("export_xml_forcepreviewlanguage", '0', $_selectOptions) .
+                '<br /><br /></div></div><div class="form-section">
+                <label>' . $GLOBALS['LANG']->getLL('general.action.import.upload.title') . '</label><br />' .
+                    '<span class="btn btn-default btn-file">' .
+                        $GLOBALS['LANG']->getLL('general.action.import.upload.button.title') .
+                        '<input type="file" size="60" name="uploaded_import_file" />' .
+                    '</span>' .
+                '<br /><br /></div><div class="form-section">' .
+                    '<input class="btn btn-default" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /> ' .
+                    '<input class="btn btn-default" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.export.xml.button.title') . '" name="export_excel" /> ' .
+                    '<input class="btn btn-default" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.import.xml.button.title') . '" name="import_excel" />
+                <br /><br /></div></div>';
 
         // Read uploaded file:
         if (GeneralUtility::_POST('import_excel') && $_FILES['uploaded_import_file']['tmp_name'] && is_uploaded_file($_FILES['uploaded_import_file']['tmp_name'])) {
@@ -365,7 +435,7 @@ class LocalizationManager extends BaseScriptClass
 
             $service->saveTranslation($l10ncfgObj, $translationData);
 
-            $info .= '<br/><br/>' . $this->doc->icons(1) . $GLOBALS['LANG']->getLL('import.success.message') . '<br/><br/>';
+            $info .= '<br/><br/>' . $this->moduleTemplate->icons(1) . $GLOBALS['LANG']->getLL('import.success.message') . '<br/><br/>';
         }
 
         // If export of XML is asked for, do that (this will exit and push a file for download)
@@ -431,7 +501,7 @@ class LocalizationManager extends BaseScriptClass
 
         if (count($options) > 0) {
             return '
-				<select name="' . $elementName . '" >
+				<select class="form-control" name="' . $elementName . '" >
 					' . implode('
 					', $options) . '
 				</select>
@@ -476,6 +546,10 @@ class LocalizationManager extends BaseScriptClass
         $info = '<br/>';
         $info .= '<input type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /><br /><br/>';
 
+        $menuItems = array();
+
+        $info .= $this->moduleTemplate->getDynamicTabMenu($menuItems, 'ddtabs');
+
         $info .= '<div id="ddtabs" class="basictab" style="border:0px solid gray;margin:0px;">
 					<ul style="border:0px solid #999999; ">
 					<li><a onClick="expandcontent(\'sc1\', this)" style="margin:0px;">' . $GLOBALS['LANG']->getLL('export.xml.headline.title') . '</a></li>
@@ -510,7 +584,7 @@ class LocalizationManager extends BaseScriptClass
         $info .= '<input type="file" size="60" name="uploaded_import_file" /><br /><br /><input type="submit" value="Import" name="import_xml" /><br /><br /> ';
         $info .= '</div>';
         $info .= '<div id="sc3" class="tabcontent">';
-        $info .= $this->doc->icons(1) . $GLOBALS['LANG']->getLL('file.settings.available.title');
+        $info .= $this->moduleTemplate->icons(1) . $GLOBALS['LANG']->getLL('file.settings.available.title');
 
         for (reset($allowedSettingFiles); list($settingId, $settingFileName) = each($allowedSettingFiles);) {
             $currentFile = GeneralUtility::resolveBackPath($BACK_PATH . \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('l10nmgr') . 'settings/' . $settingFileName);
@@ -546,14 +620,14 @@ class LocalizationManager extends BaseScriptClass
                 $translationData = $factory->getTranslationDataFromOldFormatCATXMLFile($uploadedTempFile);
                 $translationData->setLanguage($this->sysLanguage);
                 $service->saveTranslation($l10ncfgObj, $translationData);
-                $actionInfo .= '<br/><br/>' . $this->doc->icons(1) . 'Import done<br/><br/>(Command count:' . $service->lastTCEMAINCommandsCount . ')';
+                $actionInfo .= '<br/><br/>' . $this->moduleTemplate->icons(1) . 'Import done<br/><br/>(Command count:' . $service->lastTCEMAINCommandsCount . ')';
             } else {
                 // Relevant processing of XML Import with the help of the Importmanager
                 /** @var $importManager CatXmlImportManager */
                 $importManager = GeneralUtility::makeInstance(CatXmlImportManager::class, $uploadedTempFile,
                     $this->sysLanguage, $xmlString = "");
                 if ($importManager->parseAndCheckXMLFile() === false) {
-                    $actionInfo .= '<br/><br/>' . $this->doc->header($GLOBALS['LANG']->getLL('import.error.title')) . $importManager->getErrorMessages();
+                    $actionInfo .= '<br/><br/>' . $this->moduleTemplate->header($GLOBALS['LANG']->getLL('import.error.title')) . $importManager->getErrorMessages();
                 } else {
                     if (GeneralUtility::_POST('import_delL10N') == '1') {
                         $actionInfo .= $GLOBALS['LANG']->getLL('import.xml.delL10N.message') . '<br/>';
@@ -575,7 +649,7 @@ class LocalizationManager extends BaseScriptClass
                     //$actionInfo.="<pre>".var_export($GLOBALS['BE_USER'],true)."</pre>";
                     unset($importManager);
                     $service->saveTranslation($l10ncfgObj, $translationData);
-                    $actionInfo .= '<br/>' . $this->doc->icons(-1) . $GLOBALS['LANG']->getLL('import.xml.done.message') . '<br/><br/>(Command count:' . $service->lastTCEMAINCommandsCount . ')';
+                    $actionInfo .= '<br/>' . $this->moduleTemplate->icons(-1) . $GLOBALS['LANG']->getLL('import.xml.done.message') . '<br/><br/>(Command count:' . $service->lastTCEMAINCommandsCount . ')';
                 }
             }
             GeneralUtility::unlink_tempfile($uploadedTempFile);
@@ -655,11 +729,11 @@ class LocalizationManager extends BaseScriptClass
             }
         }
         if (!empty($actionInfo)) {
-            $info .= $this->doc->header($GLOBALS['LANG']->getLL('misc.messages.title'));
+            $info .= $this->moduleTemplate->header($GLOBALS['LANG']->getLL('misc.messages.title'));
             $info .= $actionInfo;
         }
 
-        $info .= '</div>';
+        // $info .= '</div>';
 
         return $info;
     }
@@ -785,7 +859,7 @@ class LocalizationManager extends BaseScriptClass
 
         // Shortcut
         if ($GLOBALS['BE_USER']->mayMakeShortcut()) {
-            $buttons['shortcut'] = $this->doc->makeShortcutIcon('', 'function', $this->MCONF['name']);
+            $buttons['shortcut'] = $this->moduleTemplate->makeShortcutIcon('', 'function', $this->MCONF['name']);
         }
 
         return $buttons;
@@ -799,7 +873,7 @@ class LocalizationManager extends BaseScriptClass
     public function printContent()
     {
 
-        //		$this->content .= $this->doc->endPage();
+        //		$this->content .= $this->moduleTemplate->endPage();
         echo $this->content;
     }
 
@@ -833,6 +907,124 @@ class LocalizationManager extends BaseScriptClass
         Header('Content-Type: ' . $mimeType);
         Header('Content-Disposition: attachment; filename=' . $filename);
     }
+
+    /**
+     * Returns a selector box "function menu" for a module
+     * Requires the JS function jumpToUrl() to be available
+     * See Inside TYPO3 for details about how to use / make Function menus
+     *
+     * @param mixed $mainParams The "&id=" parameter value to be sent to the module, but it can be also a parameter array which will be passed instead of the &id=...
+     * @param string $elementName The form elements name, probably something like "SET[...]
+     * @param string $currentValue The value to be selected currently.
+     * @param array $menuItems An array with the menu items for the selector box
+     * @param string $script The script to send the &id to, if empty it's automatically found
+     * @param string $addParams Additional parameters to pass to the script.
+     * @param string $label
+     *
+     * @return string HTML code for selector box
+     */
+    public static function getFuncMenu($mainParams, $elementName, $currentValue, $menuItems, $script = '', $addParams = '', $label = '')
+    {
+        if (!is_array($menuItems)) {
+            return '';
+        }
+        $scriptUrl = self::buildScriptUrl($mainParams, $addParams, $script);
+        $options = array();
+        foreach ($menuItems as $value => $text) {
+            $options[] = '<option value="' . htmlspecialchars($value) . '"' . ((string)$currentValue === (string)$value ? ' selected="selected"' : '') . '>' . htmlspecialchars($text, ENT_COMPAT, 'UTF-8', false) . '</option>';
+        }
+
+        $label = $label !== '' ?
+            ('<label>' . htmlspecialchars($label) . '</label><br />') :
+            '';
+
+        if (!empty($options)) {
+            $onChange = 'jumpToUrl(' . GeneralUtility::quoteJSvalue($scriptUrl . '&' . $elementName . '=') . '+this.options[this.selectedIndex].value,this);';
+            return '
+
+				<!-- Function Menu of module -->
+                <div class="form-group">' .
+                $label .
+				'<select class="form-control clear-both" name="' . $elementName . '" onchange="' . htmlspecialchars($onChange) . '">
+					' . implode('
+					', $options) . '
+				</select>
+				</div>
+						';
+        }
+        return '';
+    }
+
+    /**
+     * Checkbox function menu.
+     * Works like ->getFuncMenu() but takes no $menuItem array since this is a simple checkbox.
+     *
+     * @param mixed $mainParams $id is the "&id=" parameter value to be sent to the module, but it can be also a parameter array which will be passed instead of the &id=...
+     * @param string $elementName The form elements name, probably something like "SET[...]
+     * @param string $currentValue The value to be selected currently.
+     * @param string $script The script to send the &id to, if empty it's automatically found
+     * @param string $addParams Additional parameters to pass to the script.
+     * @param string $tagParams Additional attributes for the checkbox input tag
+     * @param string $label
+     *
+     * @return string HTML code for checkbox
+     * @see getFuncMenu()
+     */
+    public static function getFuncCheck($mainParams, $elementName, $currentValue, $script = '', $addParams = '', $tagParams = '', $label = '')
+    {
+        $scriptUrl = self::buildScriptUrl($mainParams, $addParams, $script);
+        $onClick = 'jumpToUrl(' . GeneralUtility::quoteJSvalue($scriptUrl . '&' . $elementName . '=') . '+(this.checked?1:0),this);';
+
+        return
+            '<div class="form-group">'.
+            '<div class="checkbox">
+            <label>
+            <input' .
+            ' type="checkbox"' .
+            ' name="' . $elementName . '"' .
+            ($currentValue ? ' checked="checked"' : '') .
+            ' onclick="' . htmlspecialchars($onClick) . '"' .
+            ($tagParams ? ' ' . $tagParams : '') .
+            ' value="1"' .
+            ' />&nbsp;' .
+            htmlspecialchars($label) .
+            '</label>
+            </div>
+            </div>';
+    }
+
+    /**
+     * Builds the URL to the current script with given arguments
+     *
+     * @param mixed $mainParams $id is the "&id=" parameter value to be sent to the module, but it can be also a parameter array which will be passed instead of the &id=...
+     * @param string $addParams Additional parameters to pass to the script.
+     * @param string $script The script to send the &id to, if empty it's automatically found
+     * @return string The completes script URL
+     */
+    protected static function buildScriptUrl($mainParams, $addParams, $script = '')
+    {
+        if (!is_array($mainParams)) {
+            $mainParams = array('id' => $mainParams);
+        }
+        if (!$script) {
+            $script = basename(PATH_thisScript);
+        }
+
+        if (GeneralUtility::_GP('route')) {
+            $router = GeneralUtility::makeInstance(Router::class);
+            $route = $router->match(GeneralUtility::_GP('route'));
+            $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+            $scriptUrl = (string)$uriBuilder->buildUriFromRoute($route->getOption('_identifier'));
+            $scriptUrl .= $addParams;
+        } elseif ($script === 'index.php' && GeneralUtility::_GET('M')) {
+            $scriptUrl = BackendUtility::getModuleUrl(GeneralUtility::_GET('M'), $mainParams) . $addParams;
+        } else {
+            $scriptUrl = $script . '?' . GeneralUtility::implodeArrayForUrl('', $mainParams) . $addParams;
+        }
+
+        return $scriptUrl;
+    }
+
 }
 
 ?>

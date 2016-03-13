@@ -87,12 +87,12 @@ class Cm2 extends BaseScriptClass
         global $BE_USER, $LANG, $BACK_PATH, $TCA_DESCR, $TCA, $CLIENT, $TYPO3_CONF_VARS;
 
         // Draw the header.
-        $this->doc = GeneralUtility::makeInstance(DocumentTemplate::class);
-        $this->doc->backPath = $BACK_PATH;
-        $this->doc->form = '<form action="" method="post" enctype="multipart/form-data">';
+        $this->module = GeneralUtility::makeInstance(DocumentTemplate::class);
+        $this->module->backPath = $BACK_PATH;
+        $this->module->form = '<form action="" method="post" enctype="multipart/form-data">';
 
         // JavaScript
-        $this->doc->JScode = '
+        $this->module->JScode = '
 			<script language="javascript" type="text/javascript">
 				script_ended = 0;
 				function jumpToUrl(URL)	{
@@ -102,16 +102,16 @@ class Cm2 extends BaseScriptClass
 		';
 
         // Header:
-        $this->content .= $this->doc->startPage($LANG->getLL('title'));
-        $this->content .= $this->doc->header($LANG->getLL('title'));
+        $this->content .= $this->module->startPage($LANG->getLL('title'));
+        $this->content .= $this->module->header($LANG->getLL('title'));
 
-        $this->content .= $this->doc->divider(5);
+        $this->content .= $this->module->divider(5);
 
         // Render the module content (for all modes):
-        $this->content .= $this->doc->section('',
+        $this->content .= $this->module->section('',
             $this->moduleContent((string)GeneralUtility::_GP('table'), (int)GeneralUtility::_GP('uid')));
 
-        $this->content .= $this->doc->spacer(10);
+        $this->content .= $this->module->spacer(10);
     }
 
     /**
@@ -229,7 +229,7 @@ class Cm2 extends BaseScriptClass
         $baseRecordFlag = '<img src="' . htmlspecialchars($GLOBALS['BACK_PATH'] . $this->sysLanguages[$rec['sys_language_uid']]['flagIcon']) . '" alt="" title="" />';
         $tFlag = '<img src="' . htmlspecialchars($GLOBALS['BACK_PATH'] . $this->sysLanguages[$rec['translation_lang']]['flagIcon']) . '" alt="' . htmlspecialchars($this->sysLanguages[$rec['translation_lang']]['title']) . '" title="' . htmlspecialchars($this->sysLanguages[$rec['translation_lang']]['title']) . '" />';
         $baseRecordStr = '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::editOnClick('&edit[' . $rec['tablename'] . '][' . $rec['recuid'] . ']=edit',
-                $this->doc->backPath)) . '">' . $icon . $title . '</a>';
+                $this->module->backPath)) . '">' . $icon . $title . '</a>';
 
         // Render for translation if any:
         $translationRecord = false;
@@ -240,7 +240,7 @@ class Cm2 extends BaseScriptClass
                 $translationRecord);
             $title = t3lib_BEfunc::getRecordTitle($translationTable, $translationRecord, 1);
             $translationRecStr = '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::editOnClick('&edit[' . $translationTable . '][' . $translationRecord['uid'] . ']=edit',
-                    $this->doc->backPath)) . '">' . $icon . $title . '</a>';
+                    $this->module->backPath)) . '">' . $icon . $title . '</a>';
         } else {
             $translationRecStr = '';
         }
@@ -248,12 +248,12 @@ class Cm2 extends BaseScriptClass
         // Action:
         if (is_array($translationRecord)) {
             $action = '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::editOnClick('&edit[' . $translationTable . '][' . $translationRecord['uid'] . ']=edit',
-                    $this->doc->backPath)) . '"><em>[Edit]</em></a>';
+                    $this->module->backPath)) . '"><em>[Edit]</em></a>';
         } elseif ($rec['sys_language_uid'] == -1) {
             $action = '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::editOnClick('&edit[' . $rec['tablename'] . '][' . $rec['recuid'] . ']=edit',
-                    $this->doc->backPath)) . '"><em>[Edit]</em></a>';
+                    $this->module->backPath)) . '"><em>[Edit]</em></a>';
         } else {
-            $action = '<a href="' . htmlspecialchars($this->doc->issueCommand('&cmd[' . $rec['tablename'] . '][' . $rec['recuid'] . '][localize]=' . $rec['translation_lang'])) . '"><em>[Localize]</em></a>';
+            $action = '<a href="' . htmlspecialchars($this->module->issueCommand('&cmd[' . $rec['tablename'] . '][' . $rec['recuid'] . '][localize]=' . $rec['translation_lang'])) . '"><em>[Localize]</em></a>';
         }
 
         return '<tr class="bgColor4-20">
@@ -278,7 +278,7 @@ class Cm2 extends BaseScriptClass
     function printContent()
     {
 
-        $this->content .= $this->doc->endPage();
+        $this->content .= $this->module->endPage();
         echo $this->content;
     }
 }
