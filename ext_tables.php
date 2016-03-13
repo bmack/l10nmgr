@@ -9,30 +9,30 @@ if (TYPO3_MODE == "BE") {
     /**
      * Registers a Backend Module
      */
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule('web', 'txl10nmgrM1', '', '', array(
-            'routeTarget' => \Localizationteam\L10nmgr\Controller\Module1::class . '::mainAction',
+    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule('web', 'ConfigurationManager', '', '', array(
+            'routeTarget' => \Localizationteam\L10nmgr\Controller\ConfigurationManager::class . '::mainAction',
             'access' => 'user,group',
-            'name' => 'web_txl10nmgrM1',
+            'name' => 'web_ConfigurationManager',
             'labels' => array(
                 'tabs_images' => array(
                     'tab' => 'EXT:l10nmgr/Resources/Public/Icons/module1_icon.gif',
                 ),
-                'll_ref' => 'LLL:EXT:l10nmgr/Resources/Private/Language/Modules/Module1/locallang_mod.xlf'
+                'll_ref' => 'LLL:EXT:l10nmgr/Resources/Private/Language/Modules/ConfigurationManager/locallang_mod.xlf'
             )
         ));
 
     /**
      * Registers a Backend Module
      */
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule('txl10nmgrM1', 'txl10nmgrCM1', '', '', array(
-            'routeTarget' => \Localizationteam\L10nmgr\Controller\Cm1::class . '::mainAction',
+    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule('ConfigurationManager', 'LocalizationManager', '', '', array(
+            'routeTarget' => \Localizationteam\L10nmgr\Controller\LocalizationManager::class . '::mainAction',
             'access' => 'user,group',
-            'name' => 'txl10nmgrM1_txl10nmgrCM1',
+            'name' => 'ConfigurationManager_LocalizationManager',
             'labels' => array(
                 'tabs_images' => array(
                     'tab' => 'EXT:l10nmgr/Resources/Public/Icons/module1_icon.gif',
                 ),
-                'll_ref' => 'LLL:EXT:l10nmgr/Resources/Private/Language/Modules/Module1/locallang_mod.xlf'
+                'll_ref' => 'LLL:EXT:l10nmgr/Resources/Private/Language/Modules/ConfigurationManager/locallang_mod.xlf'
             )
         ));
 
@@ -54,10 +54,10 @@ if (TYPO3_MODE == "BE") {
     /**
      * Registers a Backend Module
      */
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule('txl10nmgrM1', 'Module2List', '', '', array(
+    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule('ConfigurationManager', 'TranslationTasks', '', '', array(
             'routeTarget' => \Localizationteam\L10nmgr\Controller\TranslationTasks::class . '::mainAction',
             'access' => 'user,group',
-            'name' => 'txl10nmgrM1_Module2List',
+            'name' => 'ConfigurationManager_TranslationTasks',
             'labels' => array(
                 'tabs_images' => array(
                     'tab' => 'EXT:l10nmgr/Resources/Public/Icons/module1_icon.gif',

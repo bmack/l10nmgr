@@ -60,7 +60,7 @@ class Module2
 
         $this->content .= '
 			<frameset cols="' . $width . ',*"' . $onLoadHandler . '>
-				<frame name="nav_frame" src="' . BackendUtility::getModuleUrl('txl10nmgrM1_Module2List') . '" marginwidth="0" marginheight="0" scrolling="auto" />
+				<frame name="nav_frame" src="' . BackendUtility::getModuleUrl('ConfigurationManager_TranslationTasks') . '" marginwidth="0" marginheight="0" scrolling="auto" />
 				<frame name="list_frame" src="" marginwidth="0" marginheight="0" scrolling="auto" />
 			</frameset>
 

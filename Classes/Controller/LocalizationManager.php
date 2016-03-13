@@ -41,30 +41,16 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 
 /**
- * l10nmgr module cm1
+ * l10nmgr module Configuration Manager
  *
  * @author  Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author  Daniel Zielinski <d.zielinski@l10ntech.de>
  * @author  Daniel Pötzinger <poetzinger@aoemedia.de>
  * @author  Fabian Seltmann <fs@marketing-factory.de>
  * @author  Andreas Otto <andreas.otto@dkd.de>
+ * @author  Jo Hasenau <info@cybercraft.de>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *   68: class tx_l10nmgr_cm1 extends t3lib_SCbase
- *   75:     function menuConfig()
- *   89:     function main()
- *  101:     function jumpToUrl(URL)
- *  142:     function printContent()
- *  154:     function moduleContent($l10ncfg)
- *  203:     function render_HTMLOverview($accum)
- *  265:     function diffCMP($old, $new)
- *  278:     function submitContent($accum,$inputArray)
- *  376:     function getAccumulated($tree, $l10ncfg, $sysLang)
- * TOTAL FUNCTIONS: 9
- * (This index is automatically created/updated by the extension "extdeveval")
 
- */
 
 /**
  * Translation management tool
@@ -73,7 +59,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * @package TYPO3
  * @subpackage tx_l10nmgr
  */
-class Cm1 extends BaseScriptClass
+class LocalizationManager extends BaseScriptClass
 {
 
     var $flexFormDiffArray = array();
@@ -107,9 +93,9 @@ class Cm1 extends BaseScriptClass
      */
     public function init()
     {
-        $this->MCONF['name'] = 'txl10nmgrM1_txl10nmgrCM1';
+        $this->MCONF['name'] = 'ConfigurationManager_LocalizationManager';
         $GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
-        $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/Cm1/locallang.xlf");
+        $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/LocalizationManager/locallang.xlf");
         parent::init();
     }
 
@@ -177,7 +163,7 @@ class Cm1 extends BaseScriptClass
         // Draw the header.
         $this->doc = GeneralUtility::makeInstance(DocumentTemplate::class);
         $this->doc->backPath = $GLOBALS['BACK_PATH'];
-        $this->doc->setModuleTemplate('EXT:l10nmgr/Resources/Private/Templates/Cm1Template.html');
+        $this->doc->setModuleTemplate('EXT:l10nmgr/Resources/Private/Templates/LocalizationManagerTemplate.html');
         $this->doc->form = '<form action="" method="post" enctype="multipart/form-data">';
 
         // JavaScript
@@ -480,7 +466,7 @@ class Cm1 extends BaseScriptClass
             'transit' => 'StarTransit_XML_UTF_TYPO3.FFD',
             'sdltrados2007' => 'SDLTradosTagEditor.ini',
             'sdltrados2009' => 'TYPO3_l10nmgr.sdlfiletype',
-            'sdltrados2011-2014' => 'TYPO3_LocalizationManager_v3.6.free.sdlftsettings',
+            'sdltrados2011-2014' => 'TYPO3_ConfigurationManager_v3.6.free.sdlftsettings',
             'sdlpassolo' => 'SDLPassolo.xfg',
         );
 

@@ -24,11 +24,9 @@ namespace Localizationteam\L10nmgr\Controller;
      * @author  Kasper Skårhøj <kasperYYYY@typo3.com>
      */
 
-// DEFAULT initialization of a module [BEGIN]
 use TYPO3\CMS\Backend\Module\BaseScriptClass;
 use TYPO3\CMS\Backend\Template\DocumentTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Backend\Utility\IconUtility;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -37,10 +35,11 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * Translation management tool
  *
  * @author     Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author     Jo Hasenau <info@cybercraft.de>
  * @package    TYPO3
  * @subpackage tx_l10nmgr
  */
-class Module1 extends BaseScriptClass
+class ConfigurationManager extends BaseScriptClass
 {
 
     var $pageinfo;
@@ -77,10 +76,10 @@ class Module1 extends BaseScriptClass
      */
     public function init()
     {
-        $this->MCONF['name'] = 'web_txl10nmgrM1';
+        $this->MCONF['name'] = 'web_ConfigurationManager';
         $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
         $GLOBALS['BE_USER']->modAccess($this->MCONF, 1);
-        $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/Module1/locallang.xlf");
+        $GLOBALS['LANG']->includeLLFile("EXT:l10nmgr/Resources/Private/Language/Modules/ConfigurationManager/locallang.xlf");
         parent::init();
     }
 
@@ -98,10 +97,10 @@ class Module1 extends BaseScriptClass
         $this->doc = GeneralUtility::makeInstance(DocumentTemplate::class);
         $this->doc->backPath = $GLOBALS['BACK_PATH'];
         // NOTE: this module uses the same template as the CM1 module
-        $this->doc->setModuleTemplate('EXT:l10nmgr/Resources/Private/Templates/Cm1Template.html');
+        $this->doc->setModuleTemplate('EXT:l10nmgr/Resources/Private/Templates/LocalizationManagerTemplate.html');
         $this->doc->form = '<form action="" method="POST">';
         // Load the styles and JavaScript for the tooltips
-        $this->doc->addStyleSheet('tx_l10nmgr_module1',
+        $this->doc->addStyleSheet('ConfigurationManager',
             ExtensionManagementUtility::extRelPath('l10nmgr') . 'Resources/Public/Contrib/jquery.tooltip.css');
         $this->doc->loadJavascriptLib($extRelPath . 'Resources/Public/Contrib/jquery-1.2.3.js');
         $this->doc->loadJavascriptLib($extRelPath . 'Resources/Public/Contrib/jquery.tooltip.js');
@@ -160,7 +159,7 @@ class Module1 extends BaseScriptClass
                 $configurationDetails .= '</div>';
                 $content .= '<tr class="db_list_normal">';
                 $content .= '<td>' . $configurationDetails . '</td>';
-                $content .= '<td><a href="' . BackendUtility::getModuleUrl('txl10nmgrM1_txl10nmgrCM1', array(
+                $content .= '<td><a href="' . BackendUtility::getModuleUrl('ConfigurationManager_LocalizationManager', array(
                         'id' => $record['uid'],
                         'srcPID' => (int)$this->id
                     )) . '">' . $record['title'] . '</a>' . '</td>';
