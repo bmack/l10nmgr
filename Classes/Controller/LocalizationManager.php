@@ -230,7 +230,7 @@ class LocalizationManager extends BaseScriptClass
         // Find l10n configuration record
         /** @var $l10ncfgObj L10nConfiguration */
         $l10ncfgObj = GeneralUtility::makeInstance(L10nConfiguration::class);
-        $l10ncfgObj->load($this->id);
+        $l10ncfgObj->load((int) GeneralUtility::_GP('exportUID'));
 
         if ($l10ncfgObj->isLoaded()) {
 

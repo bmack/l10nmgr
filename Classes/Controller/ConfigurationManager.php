@@ -198,8 +198,9 @@ class ConfigurationManager extends BaseScriptClass
                 $content .= '<tr class="db_list_normal">';
                 $content .= '<td>' . $configurationDetails . '</td>';
                 $content .= '<td><a href="' . BackendUtility::getModuleUrl('ConfigurationManager_LocalizationManager', array(
-                        'id' => $record['uid'],
-                        'srcPID' => (int)$this->id
+                        'id' => $record['pid'],
+                        'srcPID' => $record['pid'],
+                        'exportUID' => $record['uid'],
                     )) . '">' . $record['title'] . '</a>' . '</td>';
                 // Get the full page path
                 // If very long, make sure to still display the full path
