@@ -173,6 +173,7 @@ class LocalizationManager extends BaseScriptClass
             ),
             'lang' => array(),
             'onlyChangedContent' => '',
+            'check_exports' => 1,
             'noHidden' => ''
         );
 
@@ -399,9 +400,15 @@ class LocalizationManager extends BaseScriptClass
         $_selectOptions = array('0' => '-default-');
         $_selectOptions = $_selectOptions + $this->MOD_MENU["lang"];
         $info = '<div class="form-section">' .
-                    '<div class="form-group"><div class="checkbox"><label>' .
-                        '<input type="checkbox" value="1" checked="checked" name="check_exports" /> ' . $GLOBALS['LANG']->getLL('export.xml.check_exports.title') . '<br />' .
-                    '</label></div></div><br />' .
+                    $this->getFuncCheck(
+                        $this->id,
+                        'SET[check_exports]',
+                        $this->MOD_SETTINGS['check_exports'],
+                        '',
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')) . '&exportUid=' . $l10ncfgObj->getId(),
+                        '',
+                        $GLOBALS['LANG']->getLL('export.xml.check_exports.title')
+                    ) . '<br />' .
                     '<div class="form-group"><div class="checkbox"><label>' .
                         '<input type="checkbox" value="1" name="import_asdefaultlanguage" /> ' . $GLOBALS['LANG']->getLL('import.xml.asdefaultlanguage.title') .
                     '</label></div></div><br /><br />' .
@@ -452,7 +459,7 @@ class LocalizationManager extends BaseScriptClass
             }
 
             //Check the export
-            if ((GeneralUtility::_POST('check_exports') == '1') && ($viewClass->checkExports() == false)) {
+            if ($this->MOD_SETTINGS['check_exports'] && !$viewClass->checkExports()) {
                 /** @var $flashMessage FlashMessage */
                 $flashMessage = GeneralUtility::makeInstance(FlashMessage::class,
                     $GLOBALS['LANG']->getLL('export.process.duplicate.message'),
@@ -622,7 +629,7 @@ class LocalizationManager extends BaseScriptClass
                 $viewClass->setModeNoHidden();
             }
             // Check the export
-            if ((GeneralUtility::_POST('check_exports') == '1') && ($viewClass->checkExports() == false)) {
+            if ($this->MOD_SETTINGS['check_exports'] && !$viewClass->checkExports()) {
                 /** @var $flashMessage FlashMessage */
                 $flashMessage = GeneralUtility::makeInstance(FlashMessage::class,
                     $GLOBALS['LANG']->getLL('export.process.duplicate.message'),
