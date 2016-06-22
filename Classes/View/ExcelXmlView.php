@@ -98,7 +98,7 @@ class ExcelXmlView extends AbstractExportView
                                 list($uidValue) = explode('/', $uidString);
 
                                 //DZ
-                                if (($this->forcedSourceLanguage && isset($tData['previewLanguageValues'][$this->forcedSourceLanguage])) || $this->forcedSourceLanguage === false) {
+                                if (($this->forcedSourceLanguage && isset($tData['previewLanguageValues'][$this->forcedSourceLanguage])) || !$this->forcedSourceLanguage) {
                                     //DZ
                                     if ($this->forcedSourceLanguage) {
                                         $dataForTranslation = $tData['previewLanguageValues'][$this->forcedSourceLanguage];
