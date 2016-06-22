@@ -143,7 +143,7 @@ class L10nHtmlListView extends AbstractExportView
                                             $fieldCells[] = nl2br(htmlspecialchars(current($tData['previewLanguageValues'])));
                                         }
 
-                                        $FtableRows[] = '<tr class="db_list_normal"><td>' . implode('</td><td>',
+                                        $FtableRows[] = '<tr><td>' . implode('</td><td>',
                                                 $fieldCells) . '</td></tr>';
                                     }
                                 }
@@ -167,18 +167,18 @@ class L10nHtmlListView extends AbstractExportView
                                 $editLink = '';
                             }
 
-                            $tableRows[] = '<tr class="t3-row-header">
+                            $tableRows[] = '<tr class="info">
 								<th colspan="2"><a href="' . htmlspecialchars('index.php?id=' . GeneralUtility::_GET('id') . '&showSingle=' . rawurlencode($table . ':' . $elementUid)) . '">' . htmlspecialchars($table . ':' . $elementUid) . '</a>' . $editLink . '</th>
 								<th colspan="3">' . htmlspecialchars(GeneralUtility::arrayToLogString($flags)) . '</th>
 							</tr>';
 
                             if (!$showSingle || $showSingle === $table . ':' . $elementUid) {
-                                $tableRows[] = '<tr class="bgColor-20 tableheader">
-									<td>Fieldname:</td>
-									<td width="25%">Default:</td>
-									<td width="25%">Translation:</td>
-									<td width="25%">Diff:</td>
-									' . ($page['header']['prevLang'] ? '<td width="25%">PrevLang:</td>' : '') . '
+                                $tableRows[] = '<tr>
+									<th>Fieldname</th>
+									<th width="25%">Default</th>
+									<th width="25%">Translation</th>
+									<th width="25%">Diff</th>
+									' . ($page['header']['prevLang'] ? '<th width="25%">PrevLang</th>' : '') . '
 								</tr>';
 
                                 $tableRows = array_merge($tableRows, $FtableRows);

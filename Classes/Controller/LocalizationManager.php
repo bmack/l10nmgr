@@ -354,12 +354,12 @@ class LocalizationManager extends BaseScriptClass
                 break;
 
             DEFAULT: // Default display:
-                $subcontent = '<input type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" />';
+                $subcontent = '<input class="btn btn-default" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" />';
                 break;
         } //switch block
 
         $this->content .= $this->moduleTemplate->section($subheader,
-            '<div class="col-md-4"><div class="form-inline form-inline-spaced">' . $subcontent . '</div></div>'
+            '<div class="col-md-6"><div class="form-inline form-inline-spaced">' . $subcontent . '</div></div>'
         );
     }
 
@@ -370,8 +370,8 @@ class LocalizationManager extends BaseScriptClass
         $service = GeneralUtility::makeInstance(L10nBaseService::class);
         $info = '';
         // Buttons:
-        $info .= '<input type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.save.button.title') . '" name="saveInline" onclick="return confirm(\'' . $GLOBALS['LANG']->getLL('inlineedit.save.alert.title') . '\');" />';
-        $info .= '<input type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.cancel.button.title') . '" name="_" onclick="return confirm(\'' . $GLOBALS['LANG']->getLL('inlineedit.cancel.alert.title') . '\');" />';
+        $info .= '<input class="btn btn-success" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.save.button.title') . '" name="saveInline" onclick="return confirm(\'' . $GLOBALS['LANG']->getLL('inlineedit.save.alert.title') . '\');" />&nbsp;';
+        $info .= '<input class="btn btn-danger" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.cancel.button.title') . '" name="_" onclick="return confirm(\'' . $GLOBALS['LANG']->getLL('inlineedit.cancel.alert.title') . '\');" />';
 
         //simple init of translation object:
         /** @var $translationData TranslationData */
@@ -419,9 +419,9 @@ class LocalizationManager extends BaseScriptClass
                 <label>' . $GLOBALS['LANG']->getLL('general.action.import.upload.title') . '</label><br />' .
                         '<input type="file" size="60" name="uploaded_import_file" />' .
                 '<br /></div><div class="form-section">' .
-                    '<input class="btn btn-default col-md-2 btn-info" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /> ' .
-                    '<input class="btn btn-default col-md-5 btn-success" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.export.xml.button.title') . '" name="export_excel" /> ' .
-                    '<input class="btn btn-default col-md-5 btn-warning" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.import.xml.button.title') . '" name="import_excel" />
+                    '<input class="btn btn-default btn-info" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /> ' .
+                    '<input class="btn btn-default btn-success" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.export.xml.button.title') . '" name="export_excel" /> ' .
+                    '<input class="btn btn-default btn-warning" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.import.xml.button.title') . '" name="import_excel" />
                 <br /><br /></div></div>';
 
         // Read uploaded file:
@@ -550,7 +550,7 @@ class LocalizationManager extends BaseScriptClass
             ),
             '3' => array(
                 'label' => $GLOBALS['LANG']->getLL('l10nmgr.documentation.title'),
-                'content' => '<a class="btn btn-default btn-block btn-success" href="/' . ExtensionManagementUtility::siteRelPath('l10nmgr') . 'Documentation/manual.sxw" target="_new">Download</a>'
+                'content' => '<a class="btn btn-success" href="/' . ExtensionManagementUtility::siteRelPath('l10nmgr') . 'Documentation/manual.sxw" target="_new">Download</a>'
             )
         );
 
@@ -723,8 +723,8 @@ class LocalizationManager extends BaseScriptClass
                 <label for="tx_l10nmgr_ftp_upload">' . $GLOBALS['LANG']->getLL('export.xml.ftp.title') . '</label>';
         }
 
-        $tabContentXmlExport .= '<input class="btn btn-default btn-info col-md-4" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" />' .
-            '<input class="btn btn-default btn-success col-md-8" type="submit" value="Export" name="export_xml" />';
+        $tabContentXmlExport .= '<div class="form-section"><input class="btn btn-default btn-info" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /> ' .
+            '<input class="btn btn-default btn-success" type="submit" value="Export" name="export_xml" /><br class="clearfix">&nbsp;</div>';
 
         return $tabContentXmlExport;
     }
@@ -746,8 +746,10 @@ class LocalizationManager extends BaseScriptClass
             '<div class="form-section">' .
                 '<input type="file" size="60" name="uploaded_import_file" /><br />' .
             '</div>' .
-                '<input class="btn btn-default btn-info col-md-4" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /> ' .
-                '<input class="btn btn-default btn-warning col-md-8" type="submit" value="Import" name="import_xml" />';
+            '<div class="form-section">' .
+                '<input class="btn btn-info" type="submit" value="' . $GLOBALS['LANG']->getLL('general.action.refresh.button.title') . '" name="_" /> ' .
+                '<input class="btn btn-warning" type="submit" value="Import" name="import_xml" />' .
+            '<br class="clearfix">&nbsp;</div>';
 
         return $tabContentXmlImport;
     }
