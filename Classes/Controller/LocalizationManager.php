@@ -255,34 +255,34 @@ class LocalizationManager extends BaseScriptClass
                 $title = $this->MOD_MENU["action"][$this->MOD_SETTINGS["action"]];
                 $this->content .= $this->moduleTemplate->section(
                     $title,
-                    '<div class="col-md-4">
+                    '<div class="col-md-6">
                     <div class="form-inline form-inline-spaced">
                     <div class="form-section">' .
-                    $this->getFuncMenu($l10ncfgObj->getId(),
+                    $this->getFuncMenu($this->id,
                         "SET[action]", $this->MOD_SETTINGS["action"], $this->MOD_MENU["action"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')),
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')) . '&exportUID=' . $l10ncfgObj->getId(),
                         $GLOBALS['LANG']->getLL('general.export.choose.action.title')) .
                     '<br />' .
-                    $this->getFuncMenu($l10ncfgObj->getId(),
+                    $this->getFuncMenu($this->id,
                         "SET[lang]", $this->sysLanguage, $this->MOD_MENU["lang"], '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')),
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')) . '&exportUID=' . $l10ncfgObj->getId(),
                         $GLOBALS['LANG']->getLL('export.overview.targetlanguage.label')) .
                     '<br /><br /></div><div class="form-section">' .
                     $this->getFuncCheck(
-                        $l10ncfgObj->getId(),
+                        $this->id,
                         "SET[onlyChangedContent]",
                         $this->MOD_SETTINGS["onlyChangedContent"],
                         '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')),
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')) . '&exportUID=' . $l10ncfgObj->getId(),
                         '',
                         $GLOBALS['LANG']->getLL('export.xml.new.title')
                     ) .  '<br />' .
                     $this->getFuncCheck(
-                        $l10ncfgObj->getId(),
+                        $this->id,
                         "SET[noHidden]",
                         $this->MOD_SETTINGS["noHidden"],
                         '',
-                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')),
+                        '&srcPID=' . rawurlencode(GeneralUtility::_GET('srcPID')) . '&exportUID=' . $l10ncfgObj->getId(),
                         '',
                         $GLOBALS['LANG']->getLL('export.xml.noHidden.title')
                     ) .
